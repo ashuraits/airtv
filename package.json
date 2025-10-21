@@ -1,0 +1,50 @@
+{
+  "name": "airtv",
+  "productName": "AirTV",
+  "version": "1.0.0",
+  "description": "AirTV - Modern macOS TV streaming application",
+  "main": "src/index.js",
+  "scripts": {
+    "build": "webpack --mode production",
+    "watch": "webpack --mode development --watch",
+    "start": "npm run build && electron-forge start",
+    "package": "npm run build && electron-forge package",
+    "make": "npm run build && electron-forge make",
+    "publish": "electron-forge publish",
+    "lint": "echo \"No linting configured\"",
+    "icon": "sips -s format icns icon.png --out icon.icns 2>&1 || (mkdir -p icon.iconset && sips -z 16 16 icon.png --out icon.iconset/icon_16x16.png && sips -z 32 32 icon.png --out icon.iconset/icon_16x16@2x.png && sips -z 32 32 icon.png --out icon.iconset/icon_32x32.png && sips -z 64 64 icon.png --out icon.iconset/icon_32x32@2x.png && sips -z 128 128 icon.png --out icon.iconset/icon_128x128.png && sips -z 256 256 icon.png --out icon.iconset/icon_128x128@2x.png && sips -z 256 256 icon.png --out icon.iconset/icon_256x256.png && sips -z 512 512 icon.png --out icon.iconset/icon_256x256@2x.png && sips -z 512 512 icon.png --out icon.iconset/icon_512x512.png && cp icon.png icon.iconset/icon_512x512@2x.png && iconutil -c icns icon.iconset -o icon.icns && rm -rf icon.iconset)"
+  },
+  "keywords": [],
+  "author": {
+    "name": "Alex Shuraits",
+    "email": "alexshuraits@gmail.com"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "electron-squirrel-startup": "^1.0.1",
+    "electron-store": "^11.0.2",
+    "hls.js": "^1.6.13",
+    "m3u8-parser": "^7.2.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.28.4",
+    "@babel/preset-react": "^7.27.1",
+    "@electron-forge/cli": "^7.10.2",
+    "@electron-forge/maker-deb": "^7.10.2",
+    "@electron-forge/maker-rpm": "^7.10.2",
+    "@electron-forge/maker-squirrel": "^7.10.2",
+    "@electron-forge/maker-zip": "^7.10.2",
+    "@electron-forge/plugin-auto-unpack-natives": "^7.10.2",
+    "@electron-forge/plugin-fuses": "^7.10.2",
+    "@electron/fuses": "^1.8.0",
+    "babel-loader": "^10.0.0",
+    "css-loader": "^7.1.2",
+    "electron": "38.3.0",
+    "html-webpack-plugin": "^5.6.4",
+    "style-loader": "^4.0.0",
+    "webpack": "^5.102.1",
+    "webpack-cli": "^6.0.1"
+  }
+}

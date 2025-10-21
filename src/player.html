@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>AirTV Player</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: #000;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    #video-container {
+      width: 100%;
+      height: 100vh;
+      position: relative;
+    }
+    video {
+      width: 100%;
+      height: 100%;
+      background: #000;
+    }
+    #controls {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+      padding: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      opacity: 0;
+      transition: opacity 0.3s;
+      -webkit-app-region: drag;
+      z-index: 10;
+    }
+    #video-container:hover #controls {
+      opacity: 1;
+    }
+    .channel-name {
+      color: white;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .control-buttons {
+      display: flex;
+      gap: 8px;
+      -webkit-app-region: no-drag;
+    }
+    button {
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: rgba(255,255,255,0.3);
+    }
+    #error {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      text-align: center;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="video-container">
+    <div id="controls">
+      <div class="channel-name" id="channel-name"></div>
+      <div class="control-buttons">
+        <button id="pin-btn">📌 Pin</button>
+        <button id="close-btn">✕ Close</button>
+      </div>
+    </div>
+    <video id="video" controls autoplay></video>
+    <div id="error">
+      <p>Failed to load stream</p>
+      <p style="font-size: 12px; margin-top: 8px; opacity: 0.7;">Please check the stream URL</p>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <script>
+    const video = document.getElementById('video');
+    const error = document.getElementById('error');
+    const pinBtn = document.getElementById('pin-btn');
+    const closeBtn = document.getElementById('close-btn');
+    const channelNameEl = document.getElementById('channel-name');
+    let isPinned = true;
+
+    // Set initial button state
+    pinBtn.textContent = '📍 Unpin';
+    pinBtn.style.background = 'rgba(66, 153, 225, 0.5)';
+
+    // Get channel data from query params
+    const urlParams = new URLSearchParams(window.location.search);
+    const channelData = JSON.parse(decodeURIComponent(urlParams.get('channel')));
+
+    channelNameEl.textContent = channelData.name;
+    document.title = channelData.name + ' - AirTV';
+
+    // Setup HLS
+    if (Hls.isSupported()) {
+      const hls = new Hls({
+        enableWorker: true,
+        lowLatencyMode: true,
+      });
+
+      hls.loadSource(channelData.url);
+      hls.attachMedia(video);
+
+      hls.on(Hls.Events.MANIFEST_PARSED, function() {
+        video.play().catch(e => {
+          console.error('Playback error:', e);
+        });
+      });
+
+      hls.on(Hls.Events.ERROR, function(event, data) {
+        if (data.fatal) {
+          error.style.display = 'block';
+          console.error('HLS Error:', data);
+        }
+      });
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = channelData.url;
+      video.addEventListener('loadedmetadata', function() {
+        video.play();
+      });
+    } else {
+      error.style.display = 'block';
+    }
+
+    // Button handlers
+    pinBtn.addEventListener('click', () => {
+      isPinned = !isPinned;
+      window.electronAPI.togglePin(isPinned);
+      pinBtn.textContent = isPinned ? '📍 Unpin' : '📌 Pin';
+      pinBtn.style.background = isPinned ? 'rgba(66, 153, 225, 0.5)' : 'rgba(255,255,255,0.2)';
+    });
+
+    closeBtn.addEventListener('click', () => {
+      window.electronAPI.closePlayer();
+    });
+  </script>
+</body>
+</html>

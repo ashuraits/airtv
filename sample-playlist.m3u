@@ -1,0 +1,37 @@
+#EXTM3U
+
+#EXTINF:-1 tvg-id="bbc1" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/BBC_One_logo_2021.svg/1200px-BBC_One_logo_2021.svg.png" group-title="News",BBC News
+https://d2vnbkvjbims7j.cloudfront.net/containerA/LTN/playlist.m3u8
+
+#EXTINF:-1 tvg-id="cnn" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/CNN.svg/1200px-CNN.svg.png" group-title="News",CNN International
+https://cnn-cnninternational-1-eu.rakuten.wurl.tv/playlist.m3u8
+
+#EXTINF:-1 tvg-id="france24" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/France24.png/1200px-France24.png" group-title="News",France 24 English
+https://cdn.klowdtv.net/803B48A/n1.klowdtv.net/live1/france24_720p/playlist.m3u8
+
+#EXTINF:-1 tvg-id="sky1" tvg-logo="https://static.epg.best/gb/SkyNews.uk.png" group-title="News",Sky News
+https://siloh.pluto.tv/lilo/production/SkyNews/master.m3u8
+
+#EXTINF:-1 tvg-id="espn" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/ESPN_wordmark.svg/1200px-ESPN_wordmark.svg.png" group-title="Sports",Red Bull TV
+https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8
+
+#EXTINF:-1 tvg-id="olympics" tvg-logo="https://olympics.com/images/static/logo/olympic-rings.svg" group-title="Sports",Olympic Channel
+https://ott-channels.akamaized.net/prod/live-ultra/slateChannel.m3u8
+
+#EXTINF:-1 tvg-id="nasa" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/NASA_logo.svg/1200px-NASA_logo.svg.png" group-title="Documentary",NASA TV
+https://ntv1.akamaized.net/hls/live/2014075/NASA-NTV1-HLS/master.m3u8
+
+#EXTINF:-1 tvg-id="natgeo" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Natgeologo.svg/1200px-Natgeologo.svg.png" group-title="Documentary",National Geographic
+https://sc.id-tv.kz/NatGeoHD.m3u8
+
+#EXTINF:-1 tvg-id="bloomberg" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Bloomberg_Television_logo.svg/1200px-Bloomberg_Television_logo.svg.png" group-title="Business",Bloomberg TV
+https://bloomberg.com/media-manifest/streams/asia.m3u8
+
+#EXTINF:-1 tvg-id="fashion" tvg-logo="https://i.imgur.com/DTRPV6B.png" group-title="Lifestyle",Fashion TV
+https://fashiontv-fashiontv-1-eu.rakuten.wurl.tv/playlist.m3u8
+
+#EXTINF:-1 tvg-id="music" tvg-logo="https://i.imgur.com/vVnrHqN.png" group-title="Music",XITE
+https://ms7.mx-cd.net/tv/226-1855782/XITE_NL.smil/chunklist_w1089409015_b3328000_slNLD.m3u8
+
+#EXTINF:-1 tvg-id="kids" tvg-logo="https://i.imgur.com/McgRGKG.png" group-title="Kids",Toon Goggles
+https://stream-us-east-1.getpublica.com/playlist.m3u8?network_id=36
