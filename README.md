@@ -4,6 +4,14 @@
 
 A beautiful, lightweight IPTV player for macOS with floating, pinnable video windows.
 
+## Download
+
+[![Build Status](https://github.com/alexshuraits/tvapp/actions/workflows/build.yml/badge.svg)](https://github.com/alexshuraits/tvapp/actions)
+
+**[Download Latest Release (DMG)](https://github.com/alexshuraits/tvapp/releases/latest/download/AirTV-1.0.0.dmg)**
+
+Or browse all [releases](https://github.com/alexshuraits/tvapp/releases).
+
 ## Features
 
 - 📺 **M3U Playlist Support** - Import and parse M3U/M3U8 playlist files
