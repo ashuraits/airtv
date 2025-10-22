@@ -1,9 +1,20 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-export default function VideoPlayer({ channel, onVideoRef, onPlayStateChange }) {
+export default function VideoPlayer({ channel, onVideoRef, onPlayStateChange, onError }) {
   const videoRef = useRef(null);
   const hlsRef = useRef(null);
   const [error, setError] = useState(false);
+
+  const handleRefresh = () => {
+    setError(false);
+    if (onError) onError(false);
+    // Force reload by incrementing a key or re-triggering the effect
+    if (hlsRef.current) {
+      hlsRef.current.destroy();
+      hlsRef.current = null;
+    }
+    window.location.reload();
+  };
 
   useEffect(() => {
     if (onVideoRef && videoRef.current) {
@@ -43,6 +54,7 @@ export default function VideoPlayer({ channel, onVideoRef, onPlayStateChange }) 
         hls.on(window.Hls.Events.ERROR, (event, data) => {
           if (data.fatal) {
             setError(true);
+            if (onError) onError(true);
             console.error('HLS Error:', data);
           }
         });
@@ -99,7 +111,7 @@ export default function VideoPlayer({ channel, onVideoRef, onPlayStateChange }) 
         <div className="video-error">
           <p>Failed to load stream</p>
           <p style={{ fontSize: '12px', marginTop: '8px', opacity: 0.7 }}>
-            Please check the stream URL
+            Stream error occurred
           </p>
         </div>
       )}

@@ -8,6 +8,7 @@ export default function PlayerControls({
   showControls,
   volume,
   isMuted,
+  hasError,
   onPlayPause,
   onNext,
   onPrev,
@@ -20,6 +21,17 @@ export default function PlayerControls({
   hasPrev
 }) {
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const handleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen();
+      setIsFullscreen(false);
+    }
+  };
   return (
     <div className={`player-controls ${showControls ? 'visible' : ''}`}>
       <div className="controls-top">
@@ -27,6 +39,12 @@ export default function PlayerControls({
         <div className="control-buttons-top">
           <button onClick={onToggleFavorite} className={`favorite-btn ${isFavorite ? 'favorited' : ''}`}>
             {isFavorite ? '⭐' : '☆'}
+          </button>
+          <button onClick={handleFullscreen} className="fullscreen-btn">
+            {isFullscreen ? '⊡' : '⛶'}
+          </button>
+          <button onClick={() => window.location.reload()} className="reload-btn">
+            ↻
           </button>
           <button onClick={onTogglePin} className={`pin-btn ${isPinned ? 'pinned' : ''}`}>
             {isPinned ? '📍 Unpin' : '📌 Pin'}
@@ -48,10 +66,10 @@ export default function PlayerControls({
         </button>
         <button
           onClick={onPlayPause}
-          className="control-btn play-pause-btn"
-          title={isPlaying ? 'Pause' : 'Play'}
+          className={`control-btn play-pause-btn ${hasError ? 'error-btn' : ''}`}
+          title={hasError ? 'Reload Stream' : (isPlaying ? 'Pause' : 'Play')}
         >
-          {isPlaying ? '⏸' : '▶'}
+          {hasError ? '↻' : (isPlaying ? '⏸' : '▶')}
         </button>
         <button
           onClick={onNext}

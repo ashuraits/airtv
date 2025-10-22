@@ -15,6 +15,7 @@ export default function PlayerApp() {
   const [showControls, setShowControls] = useState(true);
   const [volume, setVolume] = useState(1.0);
   const [isMuted, setIsMuted] = useState(false);
+  const [hasError, setHasError] = useState(false);
   const inactivityTimerRef = React.useRef(null);
 
   useEffect(() => {
@@ -34,33 +35,41 @@ export default function PlayerApp() {
     loadFavorites();
   }, []);
 
+  // Reset inactivity timer
+  const resetInactivityTimer = React.useCallback(() => {
+    setShowControls(true);
+
+    // Clear existing timer
+    if (inactivityTimerRef.current) {
+      clearTimeout(inactivityTimerRef.current);
+    }
+
+    // Set new timer to hide controls after 3 seconds
+    inactivityTimerRef.current = setTimeout(() => {
+      setShowControls(false);
+    }, 3000);
+  }, []);
+
   // Auto-hide controls after 3 seconds of inactivity
   useEffect(() => {
     const handleMouseMove = () => {
-      setShowControls(true);
-
-      // Clear existing timer
-      if (inactivityTimerRef.current) {
-        clearTimeout(inactivityTimerRef.current);
-      }
-
-      // Set new timer to hide controls after 3 seconds
-      inactivityTimerRef.current = setTimeout(() => {
-        setShowControls(false);
-      }, 3000);
+      resetInactivityTimer();
     };
 
     const handleClick = (e) => {
       // Don't hide if clicking on controls or sidebar
       const isControlClick = e.target.closest('.player-controls') ||
                             e.target.closest('.player-sidebar') ||
-                            e.target.closest('.sidebar-trigger');
+                            e.target.closest('.sidebar-trigger') ||
+                            e.target.closest('.volume-control-wrapper');
 
       if (isControlClick) {
+        // Reset timer on control clicks
+        resetInactivityTimer();
         return;
       }
 
-      // Hide controls immediately on click
+      // Hide controls immediately on video area click
       setShowControls(false);
 
       // Clear any existing timer
@@ -74,7 +83,7 @@ export default function PlayerApp() {
     document.addEventListener('click', handleClick);
 
     // Initial timer
-    handleMouseMove();
+    resetInactivityTimer();
 
     // Cleanup
     return () => {
@@ -84,7 +93,7 @@ export default function PlayerApp() {
         clearTimeout(inactivityTimerRef.current);
       }
     };
-  }, []);
+  }, [resetInactivityTimer]);
 
   const loadFavorites = async () => {
     try {
@@ -96,6 +105,12 @@ export default function PlayerApp() {
   };
 
   const handlePlayPause = () => {
+    if (hasError) {
+      // Reload on error
+      window.location.reload();
+      return;
+    }
+
     if (videoRef) {
       if (isPlaying) {
         videoRef.pause();
@@ -116,14 +131,28 @@ export default function PlayerApp() {
     }
   };
 
+  const updateURL = (index, channel, isFav) => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const data = JSON.parse(decodeURIComponent(urlParams.get('data') || '{}'));
+
+    data.currentIndex = index;
+    data.channel = channel;
+    data.isFavorite = isFav;
+
+    const newURL = `${window.location.pathname}?data=${encodeURIComponent(JSON.stringify(data))}`;
+    window.history.replaceState({}, '', newURL);
+  };
+
   const handleNext = async () => {
     if (currentIndex < channelList.length - 1) {
       const nextIndex = currentIndex + 1;
       const nextChannel = channelList[nextIndex];
       setCurrentIndex(nextIndex);
       setChannelData(nextChannel);
+      setHasError(false); // Reset error state
       const isFav = await checkIsFavorite(nextChannel);
       setIsFavorite(isFav);
+      updateURL(nextIndex, nextChannel, isFav);
     }
   };
 
@@ -133,16 +162,20 @@ export default function PlayerApp() {
       const prevChannel = channelList[prevIndex];
       setCurrentIndex(prevIndex);
       setChannelData(prevChannel);
+      setHasError(false); // Reset error state
       const isFav = await checkIsFavorite(prevChannel);
       setIsFavorite(isFav);
+      updateURL(prevIndex, prevChannel, isFav);
     }
   };
 
   const handleChannelSelect = async (channel, index) => {
     setCurrentIndex(index);
     setChannelData(channel);
+    setHasError(false); // Reset error state
     const isFav = await checkIsFavorite(channel);
     setIsFavorite(isFav);
+    updateURL(index, channel, isFav);
   };
 
   const handleTogglePin = () => {
@@ -211,6 +244,7 @@ export default function PlayerApp() {
         channel={channelData}
         onVideoRef={setVideoRef}
         onPlayStateChange={setIsPlaying}
+        onError={setHasError}
       />
       <PlayerControls
         channelName={channelData.name}
@@ -220,6 +254,7 @@ export default function PlayerApp() {
         showControls={showControls}
         volume={volume}
         isMuted={isMuted}
+        hasError={hasError}
         onPlayPause={handlePlayPause}
         onNext={handleNext}
         onPrev={handlePrev}
