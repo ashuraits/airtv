@@ -6,11 +6,11 @@ A beautiful, lightweight IPTV player for macOS with floating, pinnable video win
 
 ## Download
 
-[![Build Status](https://github.com/alexshuraits/tvapp/actions/workflows/build.yml/badge.svg)](https://github.com/alexshuraits/tvapp/actions)
+[![Build Status](https://github.com/ashuraits/airtv/actions/workflows/build.yml/badge.svg)](https://github.com/ashuraits/airtv/actions)
 
-**[Download Latest Release (DMG)](https://github.com/alexshuraits/tvapp/releases/latest/download/AirTV-1.0.0.dmg)**
+**[Download Latest Release](https://github.com/ashuraits/airtv/releases/latest)**
 
-Or browse all [releases](https://github.com/alexshuraits/tvapp/releases).
+Or browse all [releases](https://github.com/ashuraits/airtv/releases).
 
 ## Features
 
