@@ -8,6 +8,18 @@ if (require('electron-squirrel-startup')) {
   app.quit();
 }
 
+// Enable hot reload in development
+try {
+  if (process.env.NODE_ENV === 'development') {
+    require('electron-reloader')(module, {
+      debug: true,
+      watchRenderer: true,
+    });
+  }
+} catch (_) {
+  console.log('Error loading electron-reloader');
+}
+
 // Initialize electron-store
 const store = new Store();
 
@@ -38,10 +50,28 @@ const createWindow = () => {
   if (process.env.NODE_ENV === 'development') {
     mainWindow.webContents.openDevTools();
   }
+
+  // Close all player windows when main window closes
+  mainWindow.on('close', () => {
+    playerWindows.forEach(({ window }) => {
+      if (window && !window.isDestroyed()) {
+        window.close();
+      }
+    });
+  });
 };
 
 // Create floating player window
 const createPlayerWindow = (data) => {
+  // Check if there are other open player windows
+  const hasOtherPlayers = playerWindows.size > 0;
+
+  // Start muted if other windows exist (first window unmuted, others muted)
+  const playerData = {
+    ...data,
+    startMuted: hasOtherPlayers
+  };
+
   const playerWindow = new BrowserWindow({
     width: 896,  // 640 * 1.4
     height: 504, // 360 * 1.4
@@ -60,14 +90,14 @@ const createPlayerWindow = (data) => {
     backgroundColor: '#000000',
   });
 
-  // Load player HTML with channel data (channel, channelList, currentIndex)
-  const dataParam = encodeURIComponent(JSON.stringify(data));
+  // Load player HTML with channel data (channel, channelList, currentIndex, startMuted)
+  const dataParam = encodeURIComponent(JSON.stringify(playerData));
   playerWindow.loadFile(path.join(__dirname, '../dist/player.html'), {
     query: { data: dataParam }
   });
 
   const windowId = Date.now().toString();
-  playerWindows.set(windowId, playerWindow);
+  playerWindows.set(windowId, { window: playerWindow, data: playerData });
 
   playerWindow.on('closed', () => {
     playerWindows.delete(windowId);
@@ -164,6 +194,36 @@ ipcMain.handle('remove-favorite', async (event, channelUrl) => {
   const filtered = favorites.filter(f => f.url !== channelUrl);
   store.set('favorites', filtered);
   return filtered;
+});
+
+// Broadcast message to all player windows (except sender)
+ipcMain.on('player:broadcast', (event, data) => {
+  const senderWindow = BrowserWindow.fromWebContents(event.sender);
+  playerWindows.forEach(({ window }) => {
+    if (window && !window.isDestroyed() && window !== senderWindow) {
+      window.webContents.send('player:message', data);
+    }
+  });
+});
+
+// Broadcast to all players including sender
+ipcMain.on('player:broadcast-all', (event, data) => {
+  playerWindows.forEach(({ window }) => {
+    if (window && !window.isDestroyed()) {
+      window.webContents.send('player:message', data);
+    }
+  });
+});
+
+// Get player window info
+ipcMain.handle('player:get-info', async (event) => {
+  const senderWindow = BrowserWindow.fromWebContents(event.sender);
+  for (const [id, { window, data }] of playerWindows.entries()) {
+    if (window === senderWindow) {
+      return { id, playerData: data, totalPlayers: playerWindows.size };
+    }
+  }
+  return null;
 });
 
 // App lifecycle

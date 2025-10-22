@@ -13,6 +13,8 @@ export default function PlayerApp() {
   const [favorites, setFavorites] = useState([]);
   const [videoRef, setVideoRef] = useState(null);
   const [showControls, setShowControls] = useState(true);
+  const [volume, setVolume] = useState(1.0);
+  const [isMuted, setIsMuted] = useState(false);
   const inactivityTimerRef = React.useRef(null);
 
   useEffect(() => {
@@ -25,6 +27,7 @@ export default function PlayerApp() {
       setChannelList(data.channelList || [data.channel]);
       setCurrentIndex(data.currentIndex || 0);
       setIsFavorite(data.isFavorite || false);
+      setIsMuted(data.startMuted || false);
     }
 
     // Load favorites
@@ -164,6 +167,32 @@ export default function PlayerApp() {
     }
   };
 
+  const handleVolumeChange = (newVolume) => {
+    setVolume(newVolume);
+    if (videoRef) {
+      videoRef.volume = newVolume;
+      if (newVolume > 0 && isMuted) {
+        setIsMuted(false);
+        videoRef.muted = false;
+      }
+    }
+  };
+
+  const handleToggleMute = () => {
+    const newMuted = !isMuted;
+    setIsMuted(newMuted);
+    if (videoRef) {
+      videoRef.muted = newMuted;
+    }
+  };
+
+  useEffect(() => {
+    if (videoRef) {
+      videoRef.volume = volume;
+      videoRef.muted = isMuted;
+    }
+  }, [videoRef, volume, isMuted]);
+
   const handleClose = () => {
     window.electronAPI.closePlayer();
   };
@@ -189,11 +218,15 @@ export default function PlayerApp() {
         isPinned={isPinned}
         isFavorite={isFavorite}
         showControls={showControls}
+        volume={volume}
+        isMuted={isMuted}
         onPlayPause={handlePlayPause}
         onNext={handleNext}
         onPrev={handlePrev}
         onTogglePin={handleTogglePin}
         onToggleFavorite={handleToggleFavorite}
+        onVolumeChange={handleVolumeChange}
+        onToggleMute={handleToggleMute}
         onClose={handleClose}
         hasNext={currentIndex < channelList.length - 1}
         hasPrev={currentIndex > 0}

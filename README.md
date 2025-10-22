@@ -1,5 +1,7 @@
 # AirTV - macOS IPTV Player
 
+![AirTV Screenshot](screenshot.png)
+
 A beautiful, lightweight IPTV player for macOS with floating, pinnable video windows.
 
 ## Features
