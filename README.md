@@ -12,6 +12,14 @@ A beautiful, lightweight IPTV player for macOS with floating, pinnable video win
 
 Or browse all [releases](https://github.com/ashuraits/airtv/releases).
 
+### Installation
+
+1. Download the DMG from [latest release](https://github.com/ashuraits/airtv/releases/latest)
+2. Open the DMG and **drag AirTV.app to Applications folder**
+3. Launch from Applications (don't run from DMG)
+4. If macOS shows a warning: Right-click AirTV.app → Open → confirm
+5. If still blocked, run: `xattr -c /Applications/AirTV.app`
+
 ## Features
 
 - 📺 **M3U Playlist Support** - Import and parse M3U/M3U8 playlist files
