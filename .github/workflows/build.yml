@@ -26,6 +26,20 @@ jobs:
     - name: Install dependencies
       run: npm ci
 
+    - name: Import Code Signing Certificate
+      if: runner.os == 'macOS'
+      env:
+        CERTIFICATE_BASE64: ${{ secrets.APPLE_CERTIFICATE }}
+        CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+      run: |
+        echo $CERTIFICATE_BASE64 | base64 --decode > certificate.p12
+        security create-keychain -p actions temp.keychain
+        security default-keychain -s temp.keychain
+        security unlock-keychain -p actions temp.keychain
+        security import certificate.p12 -k temp.keychain -P "$CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+        security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k actions temp.keychain
+        rm certificate.p12
+
     - name: Build application
       run: npm run build
 

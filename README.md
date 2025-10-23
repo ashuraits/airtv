@@ -14,11 +14,11 @@ Or browse all [releases](https://github.com/ashuraits/airtv/releases).
 
 ### Installation
 
-1. Download the DMG from [latest release](https://github.com/ashuraits/airtv/releases/latest)
-2. Open the DMG and **drag AirTV.app to Applications folder**
-3. Launch from Applications (don't run from DMG)
-4. If macOS shows a warning: Right-click AirTV.app → Open → confirm
-5. If still blocked, run: `xattr -c /Applications/AirTV.app`
+1. Download DMG from [latest release](https://github.com/ashuraits/airtv/releases/latest)
+2. Open DMG and drag **AirTV.app** to **Applications** folder
+3. **First launch:** Right-click AirTV.app → **Open** → Click **Open**
+4. If blocked: **System Settings** → **Privacy & Security** → Click **Open Anyway**
+5. Enter password and click **Open** to confirm
 
 ## Features
 
