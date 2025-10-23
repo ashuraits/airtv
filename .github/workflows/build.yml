@@ -44,7 +44,7 @@ jobs:
       run: npm run build
 
     - name: Package application
-      run: npm run make
+      run: npm run make -- --arch=universal
 
     - name: List output files
       run: ls -R out/

@@ -5,12 +5,14 @@ module.exports = {
   packagerConfig: {
     asar: true,
     icon: './icon.png',
-    arch: 'universal',
     osxSign: {
       identity: 'Apple Development: alexshuraits@gmail.com (H2SU2KRRNJ)',
       'hardened-runtime': true,
       entitlements: './entitlements.plist',
       'entitlements-inherit': './entitlements.plist',
+    },
+    osxUniversal: {
+      mergeASARs: true,
     },
   },
   rebuildConfig: {},

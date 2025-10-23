@@ -43,6 +43,7 @@
     "@electron-forge/plugin-fuses": "^7.10.2",
     "@electron/fuses": "^1.8.0",
     "@electron/osx-sign": "^2.2.0",
+    "@electron/universal": "^3.0.1",
     "babel-loader": "^10.0.0",
     "concurrently": "^9.2.1",
     "css-loader": "^7.1.2",
