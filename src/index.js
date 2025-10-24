@@ -66,10 +66,15 @@ const createPlayerWindow = (data) => {
   // Check if there are other open player windows
   const hasOtherPlayers = playerWindows.size > 0;
 
+  // Get last volume settings from store
+  const lastVolume = store.get('lastVolume', 1.0);
+  const lastMuted = store.get('lastMuted', false);
+
   // Start muted if other windows exist (first window unmuted, others muted)
   const playerData = {
     ...data,
-    startMuted: hasOtherPlayers
+    volume: lastVolume,
+    muted: hasOtherPlayers ? true : lastMuted
   };
 
   const playerWindow = new BrowserWindow({
@@ -194,6 +199,12 @@ ipcMain.handle('remove-favorite', async (event, channelUrl) => {
   const filtered = favorites.filter(f => f.url !== channelUrl);
   store.set('favorites', filtered);
   return filtered;
+});
+
+// Save volume settings
+ipcMain.on('save-volume-settings', (event, { volume, muted }) => {
+  store.set('lastVolume', volume);
+  store.set('lastMuted', muted);
 });
 
 // Broadcast message to all player windows (except sender)

@@ -11,6 +11,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getFavorites: () => ipcRenderer.invoke('get-favorites'),
   addFavorite: (channel) => ipcRenderer.invoke('add-favorite', channel),
   removeFavorite: (channelUrl) => ipcRenderer.invoke('remove-favorite', channelUrl),
+  saveVolumeSettings: (volume, muted) => ipcRenderer.send('save-volume-settings', { volume, muted }),
 
   // Bidirectional communication main <-> player
   // From player to main
