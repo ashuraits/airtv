@@ -63,6 +63,13 @@ jobs:
         path: out/make/**/*.zip
         if-no-files-found: warn
 
+    - name: Upload update metadata
+      uses: actions/upload-artifact@v4
+      with:
+        name: AirTV-macOS-metadata
+        path: out/make/**/*.yml
+        if-no-files-found: warn
+
   release:
     needs: build-macos
     runs-on: ubuntu-latest
@@ -72,16 +79,31 @@ jobs:
       contents: write
 
     steps:
-    - name: Download artifacts
+    - name: Download DMG artifacts
       uses: actions/download-artifact@v4
       with:
         name: AirTV-macOS
         path: artifacts/
 
+    - name: Download ZIP artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: AirTV-macOS-ZIP
+        path: artifacts/
+
+    - name: Download metadata artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: AirTV-macOS-metadata
+        path: artifacts/
+
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
-        files: artifacts/**/*.dmg
+        files: |
+          artifacts/**/*.dmg
+          artifacts/**/*.zip
+          artifacts/**/*.yml
         draft: false
         prerelease: false
         generate_release_notes: true

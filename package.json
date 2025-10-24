@@ -1,7 +1,7 @@
 {
   "name": "airtv",
   "productName": "AirTV",
-  "version": "1.0.0",
+  "version": "0.0.5",
   "description": "AirTV - Modern macOS TV streaming application",
   "main": "src/index.js",
   "scripts": {
@@ -22,9 +22,26 @@
     "email": "alexshuraits@gmail.com"
   },
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ashuraits/airtv"
+  },
+  "build": {
+    "appId": "com.alexshuraits.airtv",
+    "mac": {
+      "category": "public.app-category.entertainment"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "ashuraits",
+      "repo": "airtv"
+    }
+  },
   "dependencies": {
+    "electron-log": "^5.4.3",
     "electron-squirrel-startup": "^1.0.1",
     "electron-store": "^11.0.2",
+    "electron-updater": "^6.6.2",
     "hls.js": "^1.6.13",
     "m3u8-parser": "^7.2.0",
     "react": "^19.2.0",
