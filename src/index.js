@@ -106,6 +106,10 @@ const createPlayerWindow = (data) => {
 
   playerWindow.on('closed', () => {
     playerWindows.delete(windowId);
+    // Reset muted state when last player window closes
+    if (playerWindows.size === 0) {
+      store.set('lastMuted', false);
+    }
   });
 
   return windowId;
