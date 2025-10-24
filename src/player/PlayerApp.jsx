@@ -16,6 +16,7 @@ export default function PlayerApp() {
   const [volume, setVolume] = useState(1.0);
   const [isMuted, setIsMuted] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const [userAgent, setUserAgent] = useState('');
   const inactivityTimerRef = React.useRef(null);
 
   useEffect(() => {
@@ -30,6 +31,7 @@ export default function PlayerApp() {
       setIsFavorite(data.isFavorite || false);
       setVolume(data.volume !== undefined ? data.volume : 1.0);
       setIsMuted(data.muted !== undefined ? data.muted : false);
+      setUserAgent(data.userAgent || '');
     }
 
     // Load favorites
@@ -252,6 +254,7 @@ export default function PlayerApp() {
     <div className="player-container">
       <VideoPlayer
         channel={channelData}
+        userAgent={userAgent}
         onVideoRef={setVideoRef}
         onPlayStateChange={setIsPlaying}
         onError={setHasError}

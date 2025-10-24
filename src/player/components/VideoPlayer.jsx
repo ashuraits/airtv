@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-export default function VideoPlayer({ channel, onVideoRef, onPlayStateChange, onError }) {
+export default function VideoPlayer({ channel, userAgent, onVideoRef, onPlayStateChange, onError }) {
   const videoRef = useRef(null);
   const hlsRef = useRef(null);
   const [bufferStalled, setBufferStalled] = useState(false);
@@ -33,10 +33,19 @@ export default function VideoPlayer({ channel, onVideoRef, onPlayStateChange, on
     const video = videoRef.current;
     if (video && channel) {
       if (window.Hls && window.Hls.isSupported()) {
-        const hls = new window.Hls({
+        const hlsConfig = {
           enableWorker: true,
           lowLatencyMode: true,
-        });
+        };
+
+        // Apply custom User-Agent if provided
+        if (userAgent) {
+          hlsConfig.xhrSetup = function(xhr) {
+            xhr.setRequestHeader('User-Agent', userAgent);
+          };
+        }
+
+        const hls = new window.Hls(hlsConfig);
         hls.loadSource(channel.url);
         hls.attachMedia(video);
         hlsRef.current = hls;
@@ -116,10 +125,19 @@ export default function VideoPlayer({ channel, onVideoRef, onPlayStateChange, on
           hlsRef.current.destroy();
         }
 
-        const hls = new window.Hls({
+        const hlsConfig = {
           enableWorker: true,
           lowLatencyMode: true,
-        });
+        };
+
+        // Apply custom User-Agent if provided
+        if (userAgent) {
+          hlsConfig.xhrSetup = function(xhr) {
+            xhr.setRequestHeader('User-Agent', userAgent);
+          };
+        }
+
+        const hls = new window.Hls(hlsConfig);
 
         hls.loadSource(channel.url);
         hls.attachMedia(video);

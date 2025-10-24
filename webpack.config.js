@@ -6,6 +6,7 @@ module.exports = {
   entry: {
     renderer: './src/renderer/index.jsx',
     player: './src/player/index.jsx',
+    settings: './src/settings/index.jsx',
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
@@ -43,6 +44,11 @@ module.exports = {
       template: './src/player/player.html',
       filename: 'player.html',
       chunks: ['player'],
+    }),
+    new HtmlWebpackPlugin({
+      template: './src/settings/settings.html',
+      filename: 'settings.html',
+      chunks: ['settings'],
     }),
   ],
   devtool: 'source-map',

@@ -26,6 +26,7 @@ const store = new Store();
 // Keep track of player windows
 const playerWindows = new Map();
 let mainWindow = null;
+let settingsWindow = null;
 
 const createWindow = () => {
   // Create the browser window.
@@ -42,6 +43,9 @@ const createWindow = () => {
     },
     backgroundColor: '#1a1a1a',
   });
+
+  // Set app name for About menu
+  app.setName('AirTV');
 
   // Load the index.html from webpack build
   mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
@@ -69,12 +73,14 @@ const createPlayerWindow = (data) => {
   // Get last volume settings from store
   const lastVolume = store.get('lastVolume', 1.0);
   const lastMuted = store.get('lastMuted', false);
+  const userAgent = store.get('userAgent', 'Mozilla/5.0 (QtEmbedded; U; Linux; C) AppleWebKit/533.3 (KHTML, like Gecko) MAG200 stbapp ver: 2 rev: 250 Safari/533.3');
 
   // Start muted if other windows exist (first window unmuted, others muted)
   const playerData = {
     ...data,
     volume: lastVolume,
-    muted: hasOtherPlayers ? true : lastMuted
+    muted: hasOtherPlayers ? true : lastMuted,
+    userAgent
   };
 
   const playerWindow = new BrowserWindow({
@@ -113,6 +119,34 @@ const createPlayerWindow = (data) => {
   });
 
   return windowId;
+};
+
+// Create settings window
+const createSettingsWindow = () => {
+  if (settingsWindow && !settingsWindow.isDestroyed()) {
+    settingsWindow.focus();
+    return;
+  }
+
+  settingsWindow = new BrowserWindow({
+    width: 800,
+    height: 600,
+    minWidth: 600,
+    minHeight: 400,
+    title: 'AirTV Settings',
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+    backgroundColor: '#1a1a1a',
+  });
+
+  settingsWindow.loadFile(path.join(__dirname, '../dist/settings.html'));
+
+  settingsWindow.on('closed', () => {
+    settingsWindow = null;
+  });
 };
 
 // IPC Handlers
@@ -209,6 +243,24 @@ ipcMain.handle('remove-favorite', async (event, channelUrl) => {
 ipcMain.on('save-volume-settings', (event, { volume, muted }) => {
   store.set('lastVolume', volume);
   store.set('lastMuted', muted);
+});
+
+// Settings
+ipcMain.handle('open-settings', async () => {
+  createSettingsWindow();
+});
+
+ipcMain.handle('get-settings', async () => {
+  return {
+    userAgent: store.get('userAgent', 'Mozilla/5.0 (QtEmbedded; U; Linux; C) AppleWebKit/533.3 (KHTML, like Gecko) MAG200 stbapp ver: 2 rev: 250 Safari/533.3')
+  };
+});
+
+ipcMain.handle('save-settings', async (event, settings) => {
+  if (settings.userAgent !== undefined) {
+    store.set('userAgent', settings.userAgent);
+  }
+  return { success: true };
 });
 
 // Broadcast message to all player windows (except sender)
