@@ -6,6 +6,9 @@ const log = require('electron-log');
 autoUpdater.logger = log;
 autoUpdater.logger.transports.file.level = 'info';
 
+// Disable automatic download - we'll ask user first
+autoUpdater.autoDownload = false;
+
 // Store main window reference
 let mainWindow = null;
 let isManualCheck = false; // Track if user manually triggered check
@@ -23,7 +26,7 @@ function initialize(window) {
   if (process.env.NODE_ENV !== 'development') {
     setTimeout(() => {
       // Silent check on startup (don't set isManualCheck flag)
-      autoUpdater.checkForUpdatesAndNotify();
+      autoUpdater.checkForUpdates();
     }, 3000); // Wait 3 seconds after app start
   }
 }
@@ -42,8 +45,16 @@ function setupEventHandlers() {
       dialog.showMessageBox(mainWindow, {
         type: 'info',
         title: 'Update Available',
-        message: `New version ${info.version} found. Downloading in background...`,
-        buttons: ['OK']
+        message: `New version ${info.version} is available. Download now?`,
+        detail: 'The update will be installed when you restart the app.',
+        buttons: ['Download', 'Later'],
+        defaultId: 0,
+        cancelId: 1
+      }).then((result) => {
+        if (result.response === 0) {
+          // User clicked Download
+          autoUpdater.downloadUpdate();
+        }
       });
     }
   });
@@ -89,7 +100,9 @@ function setupEventHandlers() {
         type: 'info',
         title: 'Update Ready',
         message: `Version ${info.version} downloaded. Restart now?`,
-        buttons: ['Restart', 'Later']
+        buttons: ['Restart', 'Later'],
+        defaultId: 0,
+        cancelId: 1
       }).then((result) => {
         if (result.response === 0) {
           autoUpdater.quitAndInstall();
@@ -104,7 +117,7 @@ function setupEventHandlers() {
  */
 function checkForUpdates() {
   isManualCheck = true; // Mark as manual check
-  autoUpdater.checkForUpdatesAndNotify();
+  autoUpdater.checkForUpdates();
 }
 
 module.exports = {

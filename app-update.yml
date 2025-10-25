@@ -1,3 +1,4 @@
 provider: github
 owner: ashuraits
 repo: airtv
+updaterCacheDirName: AirTV
