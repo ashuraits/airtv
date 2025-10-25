@@ -100,12 +100,15 @@ function setupEventHandlers() {
         type: 'info',
         title: 'Update Ready',
         message: `Version ${info.version} downloaded. Restart now?`,
+        detail: 'The app will close and automatically reopen with the new version in a few seconds.',
         buttons: ['Restart', 'Later'],
         defaultId: 0,
         cancelId: 1
       }).then((result) => {
         if (result.response === 0) {
-          autoUpdater.quitAndInstall();
+          setImmediate(() => {
+            autoUpdater.quitAndInstall(false, true);
+          });
         }
       });
     }
