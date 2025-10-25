@@ -12,13 +12,22 @@ export default function Sidebar({
 }) {
   const categories = ['⭐ Favorites', ...Object.keys(playlist.categories)];
 
+  const handleOpenSettings = async () => {
+    await window.electronAPI.openSettings();
+  };
+
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
         <h1 className="app-title">AirTV</h1>
-        <button onClick={onLoadPlaylist} className="reload-btn" title="Load new playlist">
-          ↻
-        </button>
+        <div className="header-actions">
+          <button onClick={handleOpenSettings} className="settings-btn" title="Settings">
+            ⚙
+          </button>
+          <button onClick={onLoadPlaylist} className="reload-btn" title="Load new playlist">
+            ↻
+          </button>
+        </div>
       </div>
 
       <div className="search-box">

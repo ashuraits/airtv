@@ -46,6 +46,26 @@ jobs:
     - name: Package application
       run: npm run make -- --arch=universal
 
+    - name: Generate update metadata
+      if: startsWith(github.ref, 'refs/tags/')
+      run: |
+        VERSION=$(node -p "require('./package.json').version")
+        ZIP_FILE=$(find out/make -name "*.zip" -type f | head -1)
+        ZIP_NAME=$(basename "$ZIP_FILE")
+        ZIP_SIZE=$(stat -f%z "$ZIP_FILE")
+        ZIP_SHA256=$(shasum -a 256 "$ZIP_FILE" | awk '{print $1}')
+
+        cat > out/make/latest-mac.yml <<EOF
+        version: $VERSION
+        files:
+          - url: $ZIP_NAME
+            sha512: $(shasum -a 512 "$ZIP_FILE" | awk '{print $1}')
+            size: $ZIP_SIZE
+        path: $ZIP_NAME
+        sha512: $(shasum -a 512 "$ZIP_FILE" | awk '{print $1}')
+        releaseDate: $(date -u +"%Y-%m-%dT%H:%M:%S.000Z")
+        EOF
+
     - name: List output files
       run: ls -R out/
 
@@ -63,6 +83,13 @@ jobs:
         path: out/make/**/*.zip
         if-no-files-found: warn
 
+    - name: Upload update metadata
+      uses: actions/upload-artifact@v4
+      with:
+        name: AirTV-macOS-metadata
+        path: out/make/**/*.yml
+        if-no-files-found: warn
+
   release:
     needs: build-macos
     runs-on: ubuntu-latest
@@ -72,16 +99,31 @@ jobs:
       contents: write
 
     steps:
-    - name: Download artifacts
+    - name: Download DMG artifacts
       uses: actions/download-artifact@v4
       with:
         name: AirTV-macOS
         path: artifacts/
 
+    - name: Download ZIP artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: AirTV-macOS-ZIP
+        path: artifacts/
+
+    - name: Download metadata artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: AirTV-macOS-metadata
+        path: artifacts/
+
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
-        files: artifacts/**/*.dmg
+        files: |
+          artifacts/**/*.dmg
+          artifacts/**/*.zip
+          artifacts/**/*.yml
         draft: false
         prerelease: false
         generate_release_notes: true

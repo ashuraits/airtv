@@ -11,6 +11,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getFavorites: () => ipcRenderer.invoke('get-favorites'),
   addFavorite: (channel) => ipcRenderer.invoke('add-favorite', channel),
   removeFavorite: (channelUrl) => ipcRenderer.invoke('remove-favorite', channelUrl),
+  saveVolumeSettings: (volume, muted) => ipcRenderer.send('save-volume-settings', { volume, muted }),
+
+  // Settings
+  openSettings: () => ipcRenderer.invoke('open-settings'),
+  getSettings: () => ipcRenderer.invoke('get-settings'),
+  saveSettings: (settings) => ipcRenderer.invoke('save-settings', settings),
 
   // Bidirectional communication main <-> player
   // From player to main

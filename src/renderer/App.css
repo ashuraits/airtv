@@ -42,7 +42,13 @@ body {
   -webkit-text-fill-color: transparent;
 }
 
-.reload-btn {
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.reload-btn,
+.settings-btn {
   background: rgba(255, 255, 255, 0.1);
   border: none;
   color: white;
@@ -61,6 +67,10 @@ body {
 .reload-btn:hover {
   background: rgba(255, 255, 255, 0.15);
   transform: rotate(90deg);
+}
+
+.settings-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .search-box {
@@ -352,7 +362,21 @@ body {
   align-items: center;
   justify-content: center;
   height: 100vh;
-  text-align: center;
+  background: #1a1a1a;
+}
+
+.loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.loading-text {
+  font-size: 18px;
+  color: #999;
+  font-weight: 500;
+  margin: 0;
 }
 
 .empty-content {

@@ -16,6 +16,7 @@ export default function PlayerApp() {
   const [volume, setVolume] = useState(1.0);
   const [isMuted, setIsMuted] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const [userAgent, setUserAgent] = useState('');
   const inactivityTimerRef = React.useRef(null);
 
   useEffect(() => {
@@ -28,7 +29,9 @@ export default function PlayerApp() {
       setChannelList(data.channelList || [data.channel]);
       setCurrentIndex(data.currentIndex || 0);
       setIsFavorite(data.isFavorite || false);
-      setIsMuted(data.startMuted || false);
+      setVolume(data.volume !== undefined ? data.volume : 1.0);
+      setIsMuted(data.muted !== undefined ? data.muted : false);
+      setUserAgent(data.userAgent || '');
     }
 
     // Load favorites
@@ -105,8 +108,8 @@ export default function PlayerApp() {
   };
 
   const handlePlayPause = () => {
+    // If buffer stalled, manually retry
     if (hasError) {
-      // Reload on error
       window.location.reload();
       return;
     }
@@ -131,13 +134,15 @@ export default function PlayerApp() {
     }
   };
 
-  const updateURL = (index, channel, isFav) => {
+  const updateURL = (index, channel, isFav, vol, mut) => {
     const urlParams = new URLSearchParams(window.location.search);
     const data = JSON.parse(decodeURIComponent(urlParams.get('data') || '{}'));
 
     data.currentIndex = index;
     data.channel = channel;
     data.isFavorite = isFav;
+    if (vol !== undefined) data.volume = vol;
+    if (mut !== undefined) data.muted = mut;
 
     const newURL = `${window.location.pathname}?data=${encodeURIComponent(JSON.stringify(data))}`;
     window.history.replaceState({}, '', newURL);
@@ -152,7 +157,7 @@ export default function PlayerApp() {
       setHasError(false); // Reset error state
       const isFav = await checkIsFavorite(nextChannel);
       setIsFavorite(isFav);
-      updateURL(nextIndex, nextChannel, isFav);
+      updateURL(nextIndex, nextChannel, isFav, volume, isMuted);
     }
   };
 
@@ -165,7 +170,7 @@ export default function PlayerApp() {
       setHasError(false); // Reset error state
       const isFav = await checkIsFavorite(prevChannel);
       setIsFavorite(isFav);
-      updateURL(prevIndex, prevChannel, isFav);
+      updateURL(prevIndex, prevChannel, isFav, volume, isMuted);
     }
   };
 
@@ -175,7 +180,7 @@ export default function PlayerApp() {
     setHasError(false); // Reset error state
     const isFav = await checkIsFavorite(channel);
     setIsFavorite(isFav);
-    updateURL(index, channel, isFav);
+    updateURL(index, channel, isFav, volume, isMuted);
   };
 
   const handleTogglePin = () => {
@@ -207,6 +212,11 @@ export default function PlayerApp() {
       if (newVolume > 0 && isMuted) {
         setIsMuted(false);
         videoRef.muted = false;
+        updateURL(currentIndex, channelData, isFavorite, newVolume, false);
+        window.electronAPI.saveVolumeSettings(newVolume, false);
+      } else {
+        updateURL(currentIndex, channelData, isFavorite, newVolume, isMuted);
+        window.electronAPI.saveVolumeSettings(newVolume, isMuted);
       }
     }
   };
@@ -217,6 +227,8 @@ export default function PlayerApp() {
     if (videoRef) {
       videoRef.muted = newMuted;
     }
+    updateURL(currentIndex, channelData, isFavorite, volume, newMuted);
+    window.electronAPI.saveVolumeSettings(volume, newMuted);
   };
 
   useEffect(() => {
@@ -242,6 +254,7 @@ export default function PlayerApp() {
     <div className="player-container">
       <VideoPlayer
         channel={channelData}
+        userAgent={userAgent}
         onVideoRef={setVideoRef}
         onPlayStateChange={setIsPlaying}
         onError={setHasError}
