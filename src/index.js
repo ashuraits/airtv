@@ -14,8 +14,14 @@ if (require('electron-squirrel-startup')) {
 try {
   if (process.env.NODE_ENV === 'development') {
     require('electron-reloader')(module, {
-      debug: true,
-      watchRenderer: true,
+      debug: false,
+      watchRenderer: false, // Webpack handles renderer reload
+      ignore: [
+        /node_modules/,
+        /dist/,
+        /out/,
+        /\.git/,
+      ]
     });
   }
 } catch (_) {

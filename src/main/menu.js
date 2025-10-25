@@ -68,6 +68,15 @@ function createMenu() {
       ]
     },
     {
+      label: 'View',
+      submenu: [
+        { role: 'reload' },
+        { role: 'toggleDevTools' },
+        { type: 'separator' },
+        { role: 'togglefullscreen' }
+      ]
+    },
+    {
       label: 'Window',
       submenu: [
         { role: 'minimize' },
