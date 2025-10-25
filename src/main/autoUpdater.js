@@ -8,6 +8,7 @@ autoUpdater.logger.transports.file.level = 'info';
 
 // Store main window reference
 let mainWindow = null;
+let isManualCheck = false; // Track if user manually triggered check
 
 /**
  * Initialize auto-updater with main window reference
@@ -21,7 +22,8 @@ function initialize(window) {
   // Check for updates on start (skip in development)
   if (process.env.NODE_ENV !== 'development') {
     setTimeout(() => {
-      checkForUpdates();
+      // Silent check on startup (don't set isManualCheck flag)
+      autoUpdater.checkForUpdatesAndNotify();
     }, 3000); // Wait 3 seconds after app start
   }
 }
@@ -48,7 +50,8 @@ function setupEventHandlers() {
 
   autoUpdater.on('update-not-available', (info) => {
     log.info('Update not available. Current version:', info.version);
-    if (mainWindow && !mainWindow.isDestroyed()) {
+    // Only show dialog if user manually checked
+    if (isManualCheck && mainWindow && !mainWindow.isDestroyed()) {
       dialog.showMessageBox(mainWindow, {
         type: 'info',
         title: 'No Updates',
@@ -56,11 +59,13 @@ function setupEventHandlers() {
         buttons: ['OK']
       });
     }
+    isManualCheck = false; // Reset flag
   });
 
   autoUpdater.on('error', (err) => {
     log.error('Error in auto-updater:', err);
-    if (mainWindow && !mainWindow.isDestroyed()) {
+    // Only show dialog if user manually checked
+    if (isManualCheck && mainWindow && !mainWindow.isDestroyed()) {
       dialog.showMessageBox(mainWindow, {
         type: 'error',
         title: 'Update Error',
@@ -69,6 +74,7 @@ function setupEventHandlers() {
         buttons: ['OK']
       });
     }
+    isManualCheck = false; // Reset flag
   });
 
   autoUpdater.on('download-progress', (progressObj) => {
@@ -97,6 +103,7 @@ function setupEventHandlers() {
  * Manually check for updates
  */
 function checkForUpdates() {
+  isManualCheck = true; // Mark as manual check
   autoUpdater.checkForUpdatesAndNotify();
 }
 

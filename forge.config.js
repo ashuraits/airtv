@@ -5,6 +5,9 @@ module.exports = {
   packagerConfig: {
     asar: true,
     icon: './icon.png',
+    extraResource: [
+      './app-update.yml'
+    ],
     osxSign: {
       identity: 'Apple Development: alexshuraits@gmail.com (H2SU2KRRNJ)',
       'hardened-runtime': true,
