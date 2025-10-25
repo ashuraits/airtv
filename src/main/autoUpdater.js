@@ -6,11 +6,6 @@ const log = require('electron-log');
 autoUpdater.logger = log;
 autoUpdater.logger.transports.file.level = 'info';
 
-// Allow dev testing (remove in production or use env var)
-if (process.env.NODE_ENV === 'development') {
-  autoUpdater.forceDevUpdateConfig = true;
-}
-
 // Store main window reference
 let mainWindow = null;
 
