@@ -24,58 +24,10 @@ Or browse all [releases](https://github.com/ashuraits/airtv/releases).
 
 - 📺 **M3U Playlist Support** - Import and parse M3U/M3U8 playlist files
 - 🎨 **Beautiful UI** - Modern, clean interface with category navigation
-- 🔍 **Smart Search** - Quickly find channels across all categories
+- 🔍 **Smart Search** - Quickly find channels across and inside categories
 - 🎬 **Floating Players** - Multiple floating video windows that stay on top
 - 📌 **Pin/Unpin** - Toggle always-on-top for any player window
-- 🖥️ **Multi-Desktop** - Player windows visible across all macOS desktops
-- 💾 **Auto-Save** - Remembers your playlist between sessions
 - 🎯 **HLS Streaming** - Built-in HLS.js support for smooth playback
-
-## Technology Stack
-
-- **Electron 38.3.0** - Latest stable version
-- **React 19** - Modern UI framework
-- **HLS.js** - HTTP Live Streaming support
-- **electron-store** - Persistent data storage
-- **Webpack** - Module bundling
-
-## Getting Started
-
-### Prerequisites
-
-- macOS 10.13 or later
-- Node.js 22.x or later
-- npm 10.x or later
-
-### Installation
-
-1. Clone or download this repository
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-### Running the App
-
-Development mode:
-```bash
-npm start
-```
-
-Build only:
-```bash
-npm run build
-```
-
-Package for distribution:
-```bash
-npm run package
-```
-
-Create macOS installer:
-```bash
-npm run make
-```
 
 ## Usage
 
@@ -98,6 +50,7 @@ npm run make
 - **Pin/Unpin** - Toggle always-on-top behavior
 - **Close** - Close the player window
 - **Resize** - Drag window edges to resize
+- **Switch channels** - Easily switch channels inside each window
 
 ### Sample Playlist
 
@@ -110,27 +63,16 @@ A sample playlist file (`sample-playlist.m3u`) is included with demo channels in
 - Music: XITE
 - Kids: Toon Goggles
 
-## Project Structure
-
-```
-tvapp/
-├── src/
-│   ├── index.js              # Main Electron process
-│   ├── preload.js            # Preload script (IPC bridge)
-│   ├── main/
-│   │   └── playlistParser.js # M3U parser
-│   └── renderer/
-│       ├── index.jsx         # React entry point
-│       ├── App.jsx           # Main React component
-│       ├── App.css           # Application styles
-│       └── index.html        # HTML template
-├── dist/                     # Webpack build output
-├── webpack.config.js         # Webpack configuration
-├── forge.config.js           # Electron Forge config
-└── package.json              # Project dependencies
-```
 
 ## Development
+
+### Installation
+
+1. Clone or download this repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
 ### Watch Mode
 
@@ -170,19 +112,11 @@ npm start
 - Some streams may require VPN or have geo-restrictions
 - Verify the stream is HLS-compatible
 
-### App won't start
-- Ensure you've run `npm install`
-- Check Node.js version compatibility (22.x+)
-- Try deleting `node_modules` and reinstalling
-
-### Playlist won't load
-- Verify the file is valid M3U/M3U8 format
-- Check file permissions
-- Ensure channels have proper `#EXTINF` tags
-
 ## License
 
-MIT
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+**Free and Open Source Software** - Feel free to use, modify, and distribute!
 
 ## Credits
 
