@@ -2,6 +2,7 @@ const { app, BrowserWindow } = require('electron');
 const Store = require('electron-store').default;
 const windowManager = require('./main/windowManager');
 const ipcHandlers = require('./main/ipcHandlers');
+const sourcesStore = require('./main/sourcesStore');
 const autoUpdater = require('./main/autoUpdater');
 const menu = require('./main/menu');
 
@@ -31,12 +32,21 @@ try {
 // Initialize electron-store
 const store = new Store();
 
+// Initialize data layer and migration
+sourcesStore.initialize(store);
+try {
+  sourcesStore.migrateIfNeeded(store);
+} catch (e) {
+  console.error('Migration error:', e);
+}
+
 // Initialize window manager
 windowManager.initialize(store);
 
 // Register IPC handlers
 ipcHandlers.registerHandlers(
   store,
+  sourcesStore,
   windowManager.getPlayerWindows(),
   windowManager.getMainWindow,
   windowManager.getSettingsWindow,

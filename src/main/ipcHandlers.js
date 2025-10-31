@@ -4,7 +4,17 @@ const { parseM3UFile } = require('./playlistParser');
 /**
  * Register all IPC handlers
  */
-function registerHandlers(store, playerWindows, getMainWindow, getSettingsWindow, createPlayerWindow, createSettingsWindow) {
+function registerHandlers(store, sourcesStore, playerWindows, getMainWindow, getSettingsWindow, createPlayerWindow, createSettingsWindow) {
+
+  // Helper: notify main window to refresh library
+  const notifyLibraryChanged = () => {
+    try {
+      const mw = getMainWindow();
+      if (mw && !mw.isDestroyed()) {
+        mw.webContents.send('library:refresh');
+      }
+    } catch (_) {}
+  };
 
   // Load playlist file
   ipcMain.handle('load-playlist', async (event, filePath) => {
@@ -37,6 +47,20 @@ function registerHandlers(store, playerWindows, getMainWindow, getSettingsWindow
       console.error('Error loading playlist:', error);
       throw error;
     }
+  });
+
+  // Open file picker for M3U (Add Source: File)
+  ipcMain.handle('open-m3u-dialog', async () => {
+    const mainWindow = getMainWindow();
+    const result = await dialog.showOpenDialog(mainWindow, {
+      properties: ['openFile'],
+      filters: [
+        { name: 'M3U Playlists', extensions: ['m3u', 'm3u8'] },
+        { name: 'All Files', extensions: ['*'] }
+      ]
+    });
+    if (result.canceled) return null;
+    return result.filePaths[0] || null;
   });
 
   // Get stored playlist
@@ -147,6 +171,106 @@ function registerHandlers(store, playerWindows, getMainWindow, getSettingsWindow
       }
     }
     return null;
+  });
+
+  // Multi-source: Sources
+  ipcMain.handle('sources:list', async () => {
+    return sourcesStore.listSources(store);
+  });
+
+  ipcMain.handle('sources:add', async (event, payload) => {
+    const res = sourcesStore.addSource(store, payload);
+    notifyLibraryChanged();
+    return res;
+  });
+
+  ipcMain.handle('sources:update', async (event, { id, data }) => {
+    const res = sourcesStore.updateSource(store, id, data);
+    notifyLibraryChanged();
+    return res;
+  });
+
+  ipcMain.handle('sources:delete', async (event, id) => {
+    const res = sourcesStore.deleteSource(store, id);
+    notifyLibraryChanged();
+    return res;
+  });
+
+  ipcMain.handle('sources:resync', async (event, id) => {
+    const res = await sourcesStore.resyncSource(store, id);
+    if (res && res.success) notifyLibraryChanged();
+    return res;
+  });
+
+  // Incremental sync preview/apply
+  ipcMain.handle('sources:resync-preview', async (event, id) => {
+    return sourcesStore.resyncPreview(store, id);
+  });
+  ipcMain.handle('sources:resync-apply', async (event, id) => {
+    const res = await sourcesStore.resyncApply(store, id);
+    if (res && res.success) notifyLibraryChanged();
+    return res;
+  });
+
+  // Preview categories for a new source payload (no persistence)
+  ipcMain.handle('sources:preview-categories', async (event, payload) => {
+    const importer = require('./importer');
+    try {
+      return await importer.previewCategories(store, payload);
+    } catch (e) {
+      return { success: false, error: String(e && e.message ? e.message : e) };
+    }
+  });
+
+  // Test connection for a new source payload (no persistence)
+  ipcMain.handle('sources:test-connection', async (event, payload) => {
+    const importer = require('./importer');
+    try {
+      await importer.testConnection(store, payload);
+      return { success: true };
+    } catch (e) {
+      return { success: false, error: String(e && e.message ? e.message : e) };
+    }
+  });
+
+  // Multi-source: Groups
+  ipcMain.handle('groups:list', async () => {
+    return sourcesStore.listGroups(store);
+  });
+
+  ipcMain.handle('groups:create', async (event, name) => {
+    const res = sourcesStore.createGroup(store, name);
+    notifyLibraryChanged();
+    return res;
+  });
+
+  ipcMain.handle('groups:rename', async (event, { id, name }) => {
+    const res = sourcesStore.renameGroup(store, id, name);
+    notifyLibraryChanged();
+    return res;
+  });
+
+  ipcMain.handle('groups:delete', async (event, { id, strategy }) => {
+    const res = sourcesStore.deleteGroup(store, id, strategy);
+    notifyLibraryChanged();
+    return res;
+  });
+
+  // Multi-source: Channels
+  ipcMain.handle('channels:list', async (event, filters) => {
+    return sourcesStore.listChannels(store, filters || {});
+  });
+
+  ipcMain.handle('channels:move', async (event, { ids, targetGroupId }) => {
+    const res = sourcesStore.moveChannels(store, ids, targetGroupId);
+    notifyLibraryChanged();
+    return res;
+  });
+
+  ipcMain.handle('channels:delete', async (event, ids) => {
+    const res = sourcesStore.deleteChannels(store, ids);
+    notifyLibraryChanged();
+    return res;
   });
 }
 

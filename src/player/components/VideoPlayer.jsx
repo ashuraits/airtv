@@ -38,12 +38,8 @@ export default function VideoPlayer({ channel, userAgent, onVideoRef, onPlayStat
           lowLatencyMode: true,
         };
 
-        // Apply custom User-Agent if provided
-        if (userAgent) {
-          hlsConfig.xhrSetup = function(xhr) {
-            xhr.setRequestHeader('User-Agent', userAgent);
-          };
-        }
+        // Do not set 'User-Agent' header via XHR (blocked by browser).
+        // If needed, user agent is set at BrowserWindow level.
 
         const hls = new window.Hls(hlsConfig);
         hls.loadSource(channel.url);
@@ -130,12 +126,7 @@ export default function VideoPlayer({ channel, userAgent, onVideoRef, onPlayStat
           lowLatencyMode: true,
         };
 
-        // Apply custom User-Agent if provided
-        if (userAgent) {
-          hlsConfig.xhrSetup = function(xhr) {
-            xhr.setRequestHeader('User-Agent', userAgent);
-          };
-        }
+        // Do not set 'User-Agent' header via XHR (blocked).
 
         const hls = new window.Hls(hlsConfig);
 

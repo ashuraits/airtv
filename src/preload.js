@@ -17,6 +17,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   openSettings: () => ipcRenderer.invoke('open-settings'),
   getSettings: () => ipcRenderer.invoke('get-settings'),
   saveSettings: (settings) => ipcRenderer.invoke('save-settings', settings),
+  openM3UDialog: () => ipcRenderer.invoke('open-m3u-dialog'),
 
   // Bidirectional communication main <-> player
   // From player to main
@@ -29,4 +30,24 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
   // Request-response from player to main
   invokeMain: (channel, data) => ipcRenderer.invoke(channel, data),
+
+  // Multi-source APIs
+  sourcesList: () => ipcRenderer.invoke('sources:list'),
+  sourcesAdd: (payload) => ipcRenderer.invoke('sources:add', payload),
+  sourcesUpdate: (id, data) => ipcRenderer.invoke('sources:update', { id, data }),
+  sourcesDelete: (id) => ipcRenderer.invoke('sources:delete', id),
+  sourcesResync: (id) => ipcRenderer.invoke('sources:resync', id),
+  sourcesResyncPreview: (id) => ipcRenderer.invoke('sources:resync-preview', id),
+  sourcesResyncApply: (id) => ipcRenderer.invoke('sources:resync-apply', id),
+  sourcesPreviewCategories: (payload) => ipcRenderer.invoke('sources:preview-categories', payload),
+  sourcesTestConnection: (payload) => ipcRenderer.invoke('sources:test-connection', payload),
+
+  groupsList: () => ipcRenderer.invoke('groups:list'),
+  groupCreate: (name) => ipcRenderer.invoke('groups:create', name),
+  groupRename: (id, name) => ipcRenderer.invoke('groups:rename', { id, name }),
+  groupDelete: (id, strategy) => ipcRenderer.invoke('groups:delete', { id, strategy }),
+
+  channelsList: (filters) => ipcRenderer.invoke('channels:list', filters),
+  channelsMove: (ids, targetGroupId) => ipcRenderer.invoke('channels:move', { ids, targetGroupId }),
+  channelsDelete: (ids) => ipcRenderer.invoke('channels:delete', ids),
 });
