@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 export default function SearchInput({
   value,
@@ -6,7 +6,32 @@ export default function SearchInput({
   placeholder,
   className = ''
 }) {
+  const [localValue, setLocalValue] = useState(value);
+  const timerRef = useRef(null);
+
+  // Sync with external value changes (like clear from parent)
+  useEffect(() => {
+    if (value !== localValue) {
+      setLocalValue(value);
+    }
+  }, [value]);
+
+  const handleChange = (e) => {
+    const newValue = e.target.value;
+    setLocalValue(newValue);
+
+    // Clear previous timer
+    if (timerRef.current) clearTimeout(timerRef.current);
+
+    // Small debounce
+    timerRef.current = setTimeout(() => {
+      onChange({ target: { value: newValue } });
+    }, 300);
+  };
+
   const handleClear = () => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    setLocalValue('');
     onChange({ target: { value: '' } });
   };
 
@@ -15,11 +40,11 @@ export default function SearchInput({
       <input
         type="text"
         placeholder={placeholder}
-        value={value}
-        onChange={onChange}
+        value={localValue}
+        onChange={handleChange}
         className={className}
       />
-      {value && (
+      {localValue && (
         <button
           onClick={handleClear}
           className="search-clear-btn"

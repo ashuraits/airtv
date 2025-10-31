@@ -1,4 +1,5 @@
 import React from 'react';
+import { FavoriteIcon } from '../../shared/components/FavoriteButton';
 
 export default function ChannelListItem({ channel, isActive, isFavorite, onClick }) {
   return (
@@ -17,7 +18,11 @@ export default function ChannelListItem({ channel, isActive, isFavorite, onClick
         />
       )}
       <div className="channel-list-name">{channel.name}</div>
-      {isFavorite && <span className="channel-list-favorite">⭐</span>}
+      {isFavorite && (
+        <span className="channel-list-favorite">
+          <FavoriteIcon filled={true} size={14} />
+        </span>
+      )}
     </div>
   );
 }

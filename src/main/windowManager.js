@@ -94,6 +94,13 @@ function createPlayerWindow(data) {
     backgroundColor: '#000000',
   });
 
+  // Set renderer User-Agent for network requests (affects XHR/fetch/HLS)
+  if (userAgent) {
+    try {
+      playerWindow.webContents.setUserAgent(userAgent);
+    } catch (_) {}
+  }
+
   // Load player HTML with channel data
   const dataParam = encodeURIComponent(JSON.stringify(playerData));
   playerWindow.loadFile(path.join(__dirname, '../../dist/player.html'), {

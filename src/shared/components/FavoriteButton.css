@@ -1,0 +1,165 @@
+.favorite-button {
+  position: relative;
+  background: rgba(0, 0, 0, 0.6);
+  border: none;
+  padding: 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+}
+
+.favorite-button:hover {
+  background: rgba(0, 0, 0, 0.8);
+  transform: scale(1.1);
+}
+
+.favorite-button:active {
+  transform: scale(0.95);
+}
+
+.favorite-icon {
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Star stroke (outline) - always visible */
+.star-stroke {
+  fill: none;
+  color: #ffd700;
+  opacity: 1;
+}
+
+/* Star fill - only visible when favorited */
+.star-fill {
+  color: #ffd700;
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* When favorited - fill appears */
+.favorite-button.is-favorite .star-fill {
+  opacity: 1;
+}
+
+/* Hover effect - slight glow (only on hover) */
+.favorite-button:hover .star-stroke,
+.favorite-button:hover .star-fill {
+  filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.8));
+}
+
+/* Pulsing animation only on hover when favorited */
+.favorite-button.is-favorite:hover .favorite-icon {
+  animation: starPulse 1s ease-in-out infinite;
+}
+
+@keyframes starPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+/* Particle effects when favorited */
+.favorite-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: #ffd700;
+  border-radius: 50%;
+  opacity: 0;
+  animation: particleFloat 1.5s ease-out;
+}
+
+.particle-1 {
+  top: 50%;
+  left: 50%;
+  animation-delay: 0s;
+}
+
+.particle-2 {
+  top: 50%;
+  left: 50%;
+  animation-delay: 0.1s;
+}
+
+.particle-3 {
+  top: 50%;
+  left: 50%;
+  animation-delay: 0.2s;
+}
+
+.particle-4 {
+  top: 50%;
+  left: 50%;
+  animation-delay: 0.3s;
+}
+
+@keyframes particleFloat {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(0);
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--tx), var(--ty)) scale(1);
+  }
+}
+
+.particle-1 {
+  --tx: -12px;
+  --ty: -12px;
+}
+
+.particle-2 {
+  --tx: 12px;
+  --ty: -12px;
+}
+
+.particle-3 {
+  --tx: -12px;
+  --ty: 12px;
+}
+
+.particle-4 {
+  --tx: 12px;
+  --ty: 12px;
+}
+
+/* Burst animation only when just favorited */
+.favorite-button.just-favorited .favorite-icon {
+  animation: starBurst 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes starBurst {
+  0% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.4);
+  }
+  60% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Static icon version */
+.favorite-icon-static {
+  flex-shrink: 0;
+}

@@ -2,7 +2,7 @@
 
 ![AirTV Screenshot](screenshot.png)
 
-A beautiful, lightweight IPTV player for macOS with floating, pinnable video windows.
+A modern IPTV player for macOS with multiple source support, smart channel management, and floating video windows.
 
 ## Download
 
@@ -22,46 +22,44 @@ Or browse all [releases](https://github.com/ashuraits/airtv/releases).
 
 ## Features
 
-- 📺 **M3U Playlist Support** - Import and parse M3U/M3U8 playlist files
-- 🎨 **Beautiful UI** - Modern, clean interface with category navigation
-- 🔍 **Smart Search** - Quickly find channels across and inside categories
-- 🎬 **Floating Players** - Multiple floating video windows that stay on top
-- 📌 **Pin/Unpin** - Toggle always-on-top for any player window
-- 🎯 **HLS Streaming** - Built-in HLS.js support for smooth playback
+### Source Management
+- 📁 **Multiple Sources** - M3U File, M3U URL, and Xtream Codes API support
+- 🔄 **Auto-Sync** - Automatic playlist updates on app launch
+- ✅ **Connection Testing** - Validate sources before adding
+- 🔀 **Smart Import** - Create groups from categories or custom mapping
+- 📊 **Incremental Sync** - Track added/modified/removed channels
 
-## Usage
+### Channel Organization
+- 📂 **Groups** - Organize channels into custom groups
+- 🔍 **Fast Search** - Debounced search with virtual scrolling
+- ⭐ **Favorites** - Quick access to favorite channels
+- 🏷️ **Source Badges** - Visual indicators for each source
+- 🗑️ **Bulk Operations** - Select all and delete multiple channels
 
-### Loading a Playlist
+### Player
+- 🎬 **Floating Windows** - Multiple player windows with always-on-top
+- 📌 **Pin/Unpin** - Toggle window pinning per player
+- 🎯 **HLS Streaming** - Native HLS.js support for smooth playback
+- 🔊 **Volume Control** - Per-window volume with gradient slider
+- ⚡ **Quick Switching** - Change channels without closing player
 
-1. Launch AirTV
-2. Click "Load Playlist" button
-3. Select your `.m3u` or `.m3u8` file
-4. Browse channels by category
+### User Experience
+- 🎨 **Modern UI** - Clean interface with purple/dark theme
+- 🔔 **Toast Notifications** - Smooth animated notifications with blur effects
+- ⚙️ **Context Menus** - Right-click for group/channel operations
+- ✏️ **Inline Editing** - Double-click to rename groups
+- 🔄 **Auto-Updates** - Built-in update checker and installer
 
-### Playing a Channel
+## Quick Start
 
-1. Select a category from the sidebar
-2. Use the search box to filter channels (optional)
-3. Click any channel card to open a floating player
+1. **Add Source** - Settings → Add Source → Choose File/URL/Xtream
+2. **Organize** - Create groups, add channels to favorites
+3. **Watch** - Click channel to open floating player
+4. **Manage** - Right-click groups for rename/delete, bulk select channels
 
-### Floating Player Controls
+## Future Plans
 
-- **Drag** - Click and drag the top bar to move the window
-- **Pin/Unpin** - Toggle always-on-top behavior
-- **Close** - Close the player window
-- **Resize** - Drag window edges to resize
-- **Switch channels** - Easily switch channels inside each window
-
-### Sample Playlist
-
-A sample playlist file (`sample-playlist.m3u`) is included with demo channels including:
-- News: BBC News, CNN, France 24, Sky News
-- Sports: Red Bull TV, Olympic Channel
-- Documentary: NASA TV, National Geographic
-- Business: Bloomberg TV
-- Lifestyle: Fashion TV
-- Music: XITE
-- Kids: Toon Goggles
+See [tasks/](tasks/) folder for upcoming features and improvements.
 
 
 ## Development
@@ -97,20 +95,15 @@ npm start
 ## Keyboard Shortcuts
 
 - **Cmd+Q** - Quit application
-- **Cmd+W** - Close current window (floating players only)
+- **Cmd+W** - Close current window
+- **Cmd+A** - Select all (in text fields)
+- **Cmd+C/V/X** - Copy/Paste/Cut
 
 ## Known Limitations
 
-- Streams must be HLS-compatible (`.m3u8` URLs)
-- Some IPTV providers may have geo-restrictions
-- DRM-protected content is not supported
-
-## Troubleshooting
-
-### Player shows "Failed to load stream"
-- Check if the stream URL is valid and accessible
-- Some streams may require VPN or have geo-restrictions
-- Verify the stream is HLS-compatible
+- HLS streams only (`.m3u8` URLs)
+- DRM-protected content not supported
+- Some providers may have geo-restrictions
 
 ## License
 

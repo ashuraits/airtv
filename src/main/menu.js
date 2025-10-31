@@ -1,4 +1,4 @@
-const { Menu, app } = require('electron');
+const { Menu, app, BrowserWindow } = require('electron');
 
 let createSettingsWindowFn = null;
 let checkForUpdatesFn = null;
@@ -65,6 +65,20 @@ function createMenu() {
         { role: 'unhide' },
         { type: 'separator' },
         { role: 'quit' }
+      ]
+    },
+    {
+      label: 'Edit',
+      submenu: [
+        { role: 'undo' },
+        { role: 'redo' },
+        { type: 'separator' },
+        { role: 'cut' },
+        { role: 'copy' },
+        { role: 'paste' },
+        { role: 'pasteAndMatchStyle' },
+        { role: 'delete' },
+        { role: 'selectAll' }
       ]
     },
     {
