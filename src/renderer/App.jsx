@@ -5,7 +5,6 @@ import GroupsTree from './components/GroupsTree';
 import SourceFilter from './components/SourceFilter';
 import SearchInput from '../shared/components/SearchInput';
 import ImportWizard from './components/ImportWizard';
-import GroupEditor from './components/GroupEditor';
 import MoveToGroup from './components/MoveToGroup';
 import { FavoriteIcon } from '../shared/components/FavoriteButton';
 import StartupSyncModal from './components/StartupSyncModal';
@@ -25,7 +24,6 @@ function AppInner() {
   const [selectedGroupId, setSelectedGroupId] = useState('__favorites__'); // default to Favorites
   const [channels, setChannels] = useState([]);
   const [showWizard, setShowWizard] = useState(false);
-  const [showGroupEditor, setShowGroupEditor] = useState(false);
   const [showMoveDialog, setShowMoveDialog] = useState(false);
   const [selectedIds, setSelectedIds] = useState([]);
   const [startupPreviews, setStartupPreviews] = useState([]);
@@ -264,7 +262,6 @@ function AppInner() {
             <h1 className="app-title">AirTV</h1>
             <div className="header-actions">
               <button onClick={onAddSource} className="settings-btn" title="Add Source">+</button>
-              <button onClick={() => setShowGroupEditor(true)} className="settings-btn" title="Manage Groups">☰</button>
               <button onClick={handleOpenSettings} className="settings-btn" title="Settings">⚙</button>
             </div>
           </div>
@@ -358,17 +355,6 @@ function AppInner() {
             setSources(srcs || []);
             setGroups(grps || []);
             await refreshChannels(srcs, sourceFilter);
-          }}
-        />
-        <GroupEditor
-          open={showGroupEditor}
-          onClose={() => setShowGroupEditor(false)}
-          groups={groups}
-          counts={counts}
-          onChanged={async () => {
-            const grps = await window.electronAPI.groupsList();
-            setGroups(grps || []);
-            await refreshChannels();
           }}
         />
         <MoveToGroup
