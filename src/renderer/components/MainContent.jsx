@@ -18,6 +18,8 @@ export default function MainContent({
   onClearSelection,
   onSelectAll,
   onDeleteSelected,
+  onRemoveFromFavorites,
+  isFavoritesView = false,
 }) {
   const [visibleCount, setVisibleCount] = React.useState(200);
   const selectionCount = selectedIds.length;
@@ -51,25 +53,43 @@ export default function MainContent({
                 <span style={{ color: '#667eea', fontSize: '14px', fontWeight: 500, lineHeight: '38px' }}>
                   {selectionCount} selected
                 </span>
-                <button className="btn-primary" onClick={onMoveRequested} style={{ padding: '6px 12px', fontSize: '13px' }}>
-                  Move
-                </button>
-                <button className="btn-secondary" onClick={onUngroupRequested} style={{ padding: '6px 12px', fontSize: '13px' }}>
-                  Ungroup
-                </button>
-                <button
-                  className="btn-secondary"
-                  onClick={onDeleteSelected}
-                  style={{
-                    padding: '6px 12px',
-                    fontSize: '13px',
-                    background: 'rgba(239, 68, 68, 0.1)',
-                    border: '1px solid rgba(239, 68, 68, 0.3)',
-                    color: '#ef4444'
-                  }}
-                >
-                  Delete
-                </button>
+                {isFavoritesView ? (
+                  <button
+                    className="btn-secondary"
+                    onClick={onRemoveFromFavorites}
+                    style={{
+                      padding: '6px 12px',
+                      fontSize: '13px',
+                      background: 'rgba(251, 191, 36, 0.1)',
+                      border: '1px solid rgba(251, 191, 36, 0.3)',
+                      color: '#fbbf24'
+                    }}
+                  >
+                    Remove from Favorites
+                  </button>
+                ) : (
+                  <>
+                    <button className="btn-primary" onClick={onMoveRequested} style={{ padding: '6px 12px', fontSize: '13px' }}>
+                      Move
+                    </button>
+                    <button className="btn-secondary" onClick={onUngroupRequested} style={{ padding: '6px 12px', fontSize: '13px' }}>
+                      Ungroup
+                    </button>
+                    <button
+                      className="btn-secondary"
+                      onClick={onDeleteSelected}
+                      style={{
+                        padding: '6px 12px',
+                        fontSize: '13px',
+                        background: 'rgba(239, 68, 68, 0.1)',
+                        border: '1px solid rgba(239, 68, 68, 0.3)',
+                        color: '#ef4444'
+                      }}
+                    >
+                      Delete
+                    </button>
+                  </>
+                )}
                 <button className="btn-secondary" onClick={onClearSelection} style={{ padding: '6px 12px', fontSize: '13px' }}>
                   Clear
                 </button>

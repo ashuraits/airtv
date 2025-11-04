@@ -343,6 +343,19 @@ function AppInner() {
             setSelectedGroupId('__favorites__');
             show('Deleted');
           }}
+          onRemoveFromFavorites={async () => {
+            if (selectedIds.length === 0) return;
+            // Remove selected channels from favorites
+            const channelsToRemove = display.filter(ch => selectedIds.includes(ch.id));
+            for (const ch of channelsToRemove) {
+              await window.electronAPI.removeFavorite(ch.url);
+            }
+            const favs = await window.electronAPI.getFavorites();
+            setFavorites(favs || []);
+            setSelectedIds([]);
+            show('Removed from favorites');
+          }}
+          isFavoritesView={selectedGroupId === '__favorites__'}
         />
       </div>
         <ImportWizard
