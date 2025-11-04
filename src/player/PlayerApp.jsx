@@ -47,13 +47,13 @@ export default function PlayerApp() {
       clearTimeout(inactivityTimerRef.current);
     }
 
-    // Set new timer to hide controls after 3 seconds
+    // Set new timer to hide controls after 2 seconds
     inactivityTimerRef.current = setTimeout(() => {
       setShowControls(false);
-    }, 3000);
+    }, 2000);
   }, []);
 
-  // Auto-hide controls after 3 seconds of inactivity
+  // Auto-hide controls after 2 seconds of inactivity
   useEffect(() => {
     const handleMouseMove = () => {
       resetInactivityTimer();
