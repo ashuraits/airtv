@@ -1,8 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ChannelListItem from './ChannelListItem';
 
 export default function PlayerSidebar({ channels, currentIndex, favorites, showControls, onChannelSelect }) {
   const [isHovered, setIsHovered] = useState(false);
+
+  // Hide sidebar when mouse leaves window
+  useEffect(() => {
+    const handleMouseLeave = (e) => {
+      // Check if mouse left the window bounds
+      if (e.clientY <= 0 || e.clientX <= 0 ||
+          e.clientX >= window.innerWidth || e.clientY >= window.innerHeight) {
+        setIsHovered(false);
+      }
+    };
+
+    document.addEventListener('mouseout', handleMouseLeave);
+    return () => document.removeEventListener('mouseout', handleMouseLeave);
+  }, []);
 
   if (!channels || channels.length === 0) {
     return null;

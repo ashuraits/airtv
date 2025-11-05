@@ -251,7 +251,7 @@ export default function PlayerApp() {
   }
 
   return (
-    <div className="player-container">
+    <div className={`player-container ${!showControls ? 'hide-cursor' : ''}`}>
       <VideoPlayer
         channel={channelData}
         userAgent={userAgent}
