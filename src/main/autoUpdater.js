@@ -29,7 +29,12 @@ function initialize(window) {
   if (process.env.NODE_ENV !== 'development') {
     setTimeout(() => {
       // Silent check on startup (don't set isManualCheck flag)
-      autoUpdater.checkForUpdates();
+      try {
+        autoUpdater.checkForUpdates();
+      } catch (err) {
+        // Silently log startup update check errors to prevent app crash
+        log.warn('Startup update check failed:', err.message);
+      }
     }, 3000); // Wait 3 seconds after app start
   }
 }
@@ -187,7 +192,23 @@ function setupEventHandlers() {
  */
 function checkForUpdates() {
   isManualCheck = true; // Mark as manual check
-  autoUpdater.checkForUpdates();
+  try {
+    autoUpdater.checkForUpdates();
+  } catch (err) {
+    log.error('Manual update check failed:', err);
+    isManualCheck = false;
+
+    // Show error to user since this was manual
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      dialog.showMessageBox(mainWindow, {
+        type: 'error',
+        title: 'Update Check Failed',
+        message: 'Could not check for updates.',
+        detail: err.message,
+        buttons: ['OK']
+      });
+    }
+  }
 }
 
 module.exports = {
