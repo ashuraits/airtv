@@ -1,7 +1,7 @@
 {
   "name": "airtv",
   "productName": "AirTV",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "AirTV - Modern macOS TV streaming application",
   "main": "src/index.js",
   "scripts": {
