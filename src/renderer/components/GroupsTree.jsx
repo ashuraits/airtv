@@ -17,6 +17,8 @@ export default function GroupsTree({
   const [contextMenu, setContextMenu] = useState(null);
   const [renameGroupId, setRenameGroupId] = useState(null);
   const [renameValue, setRenameValue] = useState('');
+  const [draggedGroupId, setDraggedGroupId] = useState(null);
+  const [dragOverGroupId, setDragOverGroupId] = useState(null);
 
   const handleContextMenu = (e, group) => {
     e.preventDefault();
@@ -83,6 +85,75 @@ export default function GroupsTree({
     }
   };
 
+  // Drag and drop handlers
+  const handleDragStart = (e, groupId) => {
+    setDraggedGroupId(groupId);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', groupId);
+  };
+
+  const handleDragOver = (e, groupId) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (draggedGroupId && draggedGroupId !== groupId) {
+      // Determine if we're hovering over top or bottom half
+      const rect = e.currentTarget.getBoundingClientRect();
+      const midpoint = rect.top + rect.height / 2;
+      const isAbove = e.clientY < midpoint;
+      
+      setDragOverGroupId({ id: groupId, position: isAbove ? 'above' : 'below' });
+    }
+  };
+
+  const handleDragLeave = () => {
+    setDragOverGroupId(null);
+  };
+
+  const handleDrop = async (e, targetGroupId) => {
+    e.preventDefault();
+    if (!draggedGroupId || !dragOverGroupId || draggedGroupId === targetGroupId) {
+      setDraggedGroupId(null);
+      setDragOverGroupId(null);
+      return;
+    }
+
+    // Reorder groups
+    const draggedIndex = groups.findIndex(g => g.id === draggedGroupId);
+    const targetIndex = groups.findIndex(g => g.id === targetGroupId);
+
+    if (draggedIndex === -1 || targetIndex === -1) {
+      setDraggedGroupId(null);
+      setDragOverGroupId(null);
+      return;
+    }
+
+    // Create new order
+    const newGroups = [...groups];
+    const [removed] = newGroups.splice(draggedIndex, 1);
+    
+    // Insert based on position (above or below)
+    let insertIndex = targetIndex;
+    if (dragOverGroupId.position === 'below') {
+      insertIndex = draggedIndex < targetIndex ? targetIndex : targetIndex + 1;
+    } else {
+      insertIndex = draggedIndex < targetIndex ? targetIndex - 1 : targetIndex;
+    }
+    
+    newGroups.splice(insertIndex, 0, removed);
+
+    // Send new order to backend
+    const newOrderIds = newGroups.map(g => g.id);
+    await window.electronAPI.groupReorder(newOrderIds);
+
+    setDraggedGroupId(null);
+    setDragOverGroupId(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedGroupId(null);
+    setDragOverGroupId(null);
+  };
+
   return (
     <div className="categories">
       <div className="category-label">
@@ -123,13 +194,19 @@ export default function GroupsTree({
             />
           ) : (
             <button
-              className={`category-item ${selectedGroupId === g.id ? 'active' : ''}`}
+              className={`category-item ${selectedGroupId === g.id ? 'active' : ''} ${draggedGroupId === g.id ? 'dragging' : ''} ${dragOverGroupId?.id === g.id ? (dragOverGroupId.position === 'above' ? 'drag-over-above' : 'drag-over-below') : ''}`}
               onClick={() => onSelectGroup(g.id)}
               onDoubleClick={() => {
                 setRenameGroupId(g.id);
                 setRenameValue(g.name);
               }}
               onContextMenu={(e) => handleContextMenu(e, g)}
+              draggable={true}
+              onDragStart={(e) => handleDragStart(e, g.id)}
+              onDragOver={(e) => handleDragOver(e, g.id)}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => handleDrop(e, g.id)}
+              onDragEnd={handleDragEnd}
             >
               <span className="category-name">{g.name}</span>
               <span className="category-count">{counts[g.id] || 0}</span>

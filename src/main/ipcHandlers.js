@@ -250,6 +250,12 @@ function registerHandlers(store, sourcesStore, playerWindows, getMainWindow, get
     return res;
   });
 
+  ipcMain.handle('groups:reorder', async (event, ids) => {
+    const res = sourcesStore.reorderGroups(store, ids);
+    notifyLibraryChanged();
+    return res;
+  });
+
   ipcMain.handle('groups:delete', async (event, { id, strategy }) => {
     const res = sourcesStore.deleteGroup(store, id, strategy);
     notifyLibraryChanged();

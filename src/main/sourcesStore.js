@@ -294,6 +294,32 @@ function deleteChannels(store, channelIds) {
   return { success: true };
 }
 
+function reorderGroups(store, newOrderIds) {
+  const groups = store.get('groups', []);
+  if (!groups.length) return { success: true };
+
+  // Create a map for quick lookup
+  const groupMap = new Map(groups.map(g => [g.id, g]));
+  
+  // Create new array based on order IDs
+  const newGroups = [];
+  newOrderIds.forEach((id, index) => {
+    const group = groupMap.get(id);
+    if (group) {
+      newGroups.push({ ...group, order: index });
+      groupMap.delete(id);
+    }
+  });
+
+  // Append any remaining groups that weren't in the order list (safety fallback)
+  groupMap.forEach((group) => {
+    newGroups.push({ ...group, order: newGroups.length });
+  });
+
+  store.set('groups', newGroups);
+  return { success: true };
+}
+
 module.exports = {
   initialize,
   migrateIfNeeded,
@@ -312,4 +338,5 @@ module.exports = {
   moveChannels,
   deleteChannels,
   cleanupFavoritesByUrls,
+  reorderGroups,
 };

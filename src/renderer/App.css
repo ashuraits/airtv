@@ -691,6 +691,57 @@ input[type="checkbox"]:checked::after {
   color: #a8b8ff;
 }
 
+/* Drag and drop styles */
+.category-item {
+  transition: transform 0.2s ease, opacity 0.2s ease, background 0.2s ease;
+  position: relative;
+}
+
+.category-item.dragging {
+  opacity: 0.4;
+  cursor: grabbing;
+  transform: scale(0.98);
+}
+
+/* Drop zone indicator - line above */
+.category-item.drag-over-above::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba(102, 126, 234, 0.6);
+  animation: pulseGlow 1s ease-in-out infinite;
+}
+
+/* Drop zone indicator - line below */
+.category-item.drag-over-below::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba(102, 126, 234, 0.6);
+  animation: pulseGlow 1s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 8px rgba(102, 126, 234, 0.6);
+  }
+  50% {
+    opacity: 0.7;
+    box-shadow: 0 0 12px rgba(102, 126, 234, 0.8);
+  }
+}
+
 /* Main Content */
 .main-content {
   flex: 1;

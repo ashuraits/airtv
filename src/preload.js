@@ -45,6 +45,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   groupsList: () => ipcRenderer.invoke('groups:list'),
   groupCreate: (name) => ipcRenderer.invoke('groups:create', name),
   groupRename: (id, name) => ipcRenderer.invoke('groups:rename', { id, name }),
+  groupReorder: (ids) => ipcRenderer.invoke('groups:reorder', ids),
   groupDelete: (id, strategy) => ipcRenderer.invoke('groups:delete', { id, strategy }),
 
   channelsList: (filters) => ipcRenderer.invoke('channels:list', filters),
