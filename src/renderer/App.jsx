@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
-import { Loading, MainContent } from './components';
+import { Loading, MainContent, EmptyState } from './components';
 import GroupsTree from './components/GroupsTree';
 import SourceFilter from './components/SourceFilter';
 import SearchInput from '../shared/components/SearchInput';
