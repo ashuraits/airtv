@@ -22,8 +22,8 @@ export default function PlayerSidebar({ channels, currentIndex, favorites, showC
     return null;
   }
 
-  // Show sidebar only if controls are visible AND sidebar is hovered
-  const isSidebarVisible = showControls && isHovered;
+  // Show sidebar if it is hovered (ignore showControls to prevent auto-hide while scrolling/interacting)
+  const isSidebarVisible = isHovered;
 
   return (
     <>
