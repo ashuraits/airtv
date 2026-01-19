@@ -278,6 +278,15 @@ function registerHandlers(store, sourcesStore, playerWindows, getMainWindow, get
     notifyLibraryChanged();
     return res;
   });
+
+  // Export/Import
+  ipcMain.handle('import-data', async () => {
+    const exportImport = require('./exportImport');
+    const mainWindow = getMainWindow();
+    const result = await exportImport.importData(store, mainWindow);
+    if (result.success) notifyLibraryChanged();
+    return result;
+  });
 }
 
 module.exports = {

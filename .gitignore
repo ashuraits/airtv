@@ -93,3 +93,5 @@ out/
 
 # Webpack build
 dist/
+
+.vscode

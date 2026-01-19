@@ -51,4 +51,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   channelsList: (filters) => ipcRenderer.invoke('channels:list', filters),
   channelsMove: (ids, targetGroupId) => ipcRenderer.invoke('channels:move', { ids, targetGroupId }),
   channelsDelete: (ids) => ipcRenderer.invoke('channels:delete', ids),
+
+  // Export/Import
+  importData: () => ipcRenderer.invoke('import-data'),
 });

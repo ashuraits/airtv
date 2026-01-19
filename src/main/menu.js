@@ -2,12 +2,36 @@ const { Menu, app, BrowserWindow } = require('electron');
 
 let createSettingsWindowFn = null;
 let checkForUpdatesFn = null;
+let exportDataFn = null;
+let importDataFn = null;
+let eraseDataFn = null;
 
 /**
  * Set settings window creator function
  */
 function setSettingsWindowCreator(fn) {
   createSettingsWindowFn = fn;
+}
+
+/**
+ * Set export data function
+ */
+function setExportData(fn) {
+  exportDataFn = fn;
+}
+
+/**
+ * Set import data function
+ */
+function setImportData(fn) {
+  importDataFn = fn;
+}
+
+/**
+ * Set erase data function
+ */
+function setEraseData(fn) {
+  eraseDataFn = fn;
 }
 
 /**
@@ -68,6 +92,32 @@ function createMenu() {
       ]
     },
     {
+      label: 'File',
+      submenu: [
+        {
+          label: 'Export Data...',
+          accelerator: 'CmdOrCtrl+E',
+          click: () => {
+            if (exportDataFn) exportDataFn();
+          }
+        },
+        {
+          label: 'Import Data...',
+          accelerator: 'CmdOrCtrl+I',
+          click: () => {
+            if (importDataFn) importDataFn();
+          }
+        },
+        { type: 'separator' },
+        {
+          label: 'Erase All Data...',
+          click: () => {
+            if (eraseDataFn) eraseDataFn();
+          }
+        }
+      ]
+    },
+    {
       label: 'Edit',
       submenu: [
         { role: 'undo' },
@@ -109,5 +159,8 @@ function createMenu() {
 module.exports = {
   createMenu,
   setSettingsWindowCreator,
-  setCheckForUpdates
+  setCheckForUpdates,
+  setExportData,
+  setImportData,
+  setEraseData
 };

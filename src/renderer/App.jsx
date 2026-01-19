@@ -50,6 +50,25 @@ function AppInner() {
     return () => { try { unsubscribe && unsubscribe(); } catch (_) {} };
   }, [sourceFilter]);
 
+  // Listen for data import to refresh UI
+  useEffect(() => {
+    const unsubscribe = window.electronAPI.onFromMain('data-imported', async () => {
+      try {
+        const srcs = await window.electronAPI.sourcesList();
+        const grps = await window.electronAPI.groupsList();
+        const favs = await window.electronAPI.getFavorites();
+        setSources(srcs || []);
+        setGroups(grps || []);
+        setFavorites(favs || []);
+        await refreshChannels(srcs, sourceFilter);
+        show('Data imported successfully');
+      } catch (e) {
+        console.error('Failed to refresh after import:', e);
+      }
+    });
+    return () => { try { unsubscribe && unsubscribe(); } catch (_) {} };
+  }, [sourceFilter]);
+
   // legacy default removed
 
   const init = async () => {
@@ -161,7 +180,22 @@ function AppInner() {
   if (sources.length === 0) {
     return (
       <>
-        <EmptyState onLoadSource={() => setShowWizard(true)} />
+        <EmptyState 
+          onLoadSource={() => setShowWizard(true)}
+          onImportData={async () => {
+            const result = await window.electronAPI.importData();
+            if (result.success) {
+              const srcs = await window.electronAPI.sourcesList();
+              const grps = await window.electronAPI.groupsList();
+              const favs = await window.electronAPI.getFavorites();
+              setSources(srcs || []);
+              setGroups(grps || []);
+              setFavorites(favs || []);
+              await refreshChannels(srcs, sourceFilter);
+              show('Data imported successfully');
+            }
+          }}
+        />
         <ImportWizard
           open={showWizard}
           onClose={() => setShowWizard(false)}
