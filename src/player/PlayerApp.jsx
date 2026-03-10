@@ -24,16 +24,26 @@ export default function PlayerApp() {
   useEffect(() => {
     // Parse channel data from query params
     const urlParams = new URLSearchParams(window.location.search);
-    const data = JSON.parse(decodeURIComponent(urlParams.get('data') || '{}'));
+    const raw = urlParams.get('data') || '{}';
+    let data;
+    try {
+      data = JSON.parse(decodeURIComponent(raw));
+    } catch (e) {
+      console.error('Failed to parse player data:', e);
+      return;
+    }
 
     if (data.channel) {
       setChannelData(data.channel);
-      setChannelList(data.channelList || [data.channel]);
       setCurrentIndex(data.currentIndex || 0);
       setIsFavorite(data.isFavorite || false);
       setVolume(data.volume !== undefined ? data.volume : 1.0);
       setIsMuted(data.muted !== undefined ? data.muted : false);
       setUserAgent(data.userAgent || '');
+      // channelList is too large for query string — fetch from main process
+      window.electronAPI.invokeMain('get-channel-list').then(list => {
+        setChannelList(list.length > 0 ? list : [data.channel]);
+      });
     }
 
     // Load favorites

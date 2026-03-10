@@ -80,6 +80,15 @@ function registerHandlers(store, sourcesStore, playerWindows, getMainWindow, get
     }
   });
 
+  // Return channelList for the requesting player window
+  ipcMain.handle('get-channel-list', (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    for (const [, entry] of playerWindows) {
+      if (entry.window === win) return entry.data.channelList || [];
+    }
+    return [];
+  });
+
   // Toggle pin on player window
   ipcMain.on('toggle-pin', (event, isPinned) => {
     const window = BrowserWindow.fromWebContents(event.sender);
