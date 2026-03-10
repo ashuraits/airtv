@@ -133,8 +133,16 @@ export default function ImportWizard({ open, onClose, groups, onCreated }) {
     if (path) setUri(path);
   };
 
+  const buildTestPayload = () => {
+    // Build minimal payload for connection test — no group creation
+    if (type === 'file') return { type, uri };
+    if (type === 'url') return { type, uri };
+    if (type === 'xtream') return { type, meta: { origin: { server: xtServer, user: xtUser, pass: xtPass } } };
+    throw new Error('Unknown type');
+  };
+
   const testConnection = async () => {
-    // Test connection without adding source
+    // Test connection without adding source or creating groups
     const validationError = validate();
     if (validationError) {
       show(validationError, 'error');
@@ -143,7 +151,7 @@ export default function ImportWizard({ open, onClose, groups, onCreated }) {
 
     try {
       setBusy(true);
-      const payload = await buildPayload();
+      const payload = buildTestPayload();
 
       const res = await window.electronAPI.sourcesTestConnection(payload);
       if (res && res.success) {
