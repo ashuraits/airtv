@@ -17,6 +17,8 @@ export default function PlayerApp() {
   const [isMuted, setIsMuted] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [userAgent, setUserAgent] = useState('');
+  const [forceShowVolume, setForceShowVolume] = useState(false);
+  const volumeTimerRef = React.useRef(null);
   const inactivityTimerRef = React.useRef(null);
 
   useEffect(() => {
@@ -52,6 +54,31 @@ export default function PlayerApp() {
       setShowControls(false);
     }, 2000);
   }, []);
+
+  // Keyboard shortcuts: Left/Right = prev/next channel, Up/Down = volume
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'ArrowRight') { e.preventDefault(); handleNext(); resetInactivityTimer(); }
+      else if (e.key === 'ArrowLeft') { e.preventDefault(); handlePrev(); resetInactivityTimer(); }
+      else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        handleVolumeChange(Math.min(1, volume + 0.1));
+        resetInactivityTimer();
+        setForceShowVolume(true);
+        clearTimeout(volumeTimerRef.current);
+        volumeTimerRef.current = setTimeout(() => setForceShowVolume(false), 1500);
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        handleVolumeChange(Math.max(0, volume - 0.1));
+        resetInactivityTimer();
+        setForceShowVolume(true);
+        clearTimeout(volumeTimerRef.current);
+        volumeTimerRef.current = setTimeout(() => setForceShowVolume(false), 1500);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [currentIndex, channelList, volume, isMuted, videoRef, resetInactivityTimer]);
 
   // Auto-hide controls after 2 seconds of inactivity
   useEffect(() => {
@@ -278,6 +305,7 @@ export default function PlayerApp() {
         onClose={handleClose}
         hasNext={currentIndex < channelList.length - 1}
         hasPrev={currentIndex > 0}
+        forceShowVolume={forceShowVolume}
       />
       <PlayerSidebar
         channels={channelList}

@@ -30,13 +30,19 @@ function buildXtreamUrl(server, user, pass) {
   return u.toString();
 }
 
-function fetchText(urlStr, { headers = {}, timeoutMs = 15000 } = {}) {
-  // Simple Node http(s) GET returning text
+function fetchText(urlStr, { headers = {}, timeoutMs = 15000, redirects = 5 } = {}) {
+  // Simple Node http(s) GET returning text, follows redirects
   return new Promise((resolve, reject) => {
     let u;
     try { u = new URL(urlStr); } catch (e) { return reject(new Error('Invalid URL')); }
     const client = u.protocol === 'https:' ? https : http;
     const req = client.request(u, { method: 'GET', headers }, (res) => {
+      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+        if (redirects <= 0) return reject(new Error('Too many redirects'));
+        const next = new URL(res.headers.location, urlStr).toString();
+        res.resume();
+        return fetchText(next, { headers, timeoutMs, redirects: redirects - 1 }).then(resolve, reject);
+      }
       if (res.statusCode >= 400) {
         const msg = res.statusCode === 401 || res.statusCode === 403
           ? `HTTP ${res.statusCode} - Check username/password`
@@ -47,7 +53,13 @@ function fetchText(urlStr, { headers = {}, timeoutMs = 15000 } = {}) {
       res.on('data', (c) => chunks.push(c));
       res.on('end', () => resolve(Buffer.concat(chunks).toString('utf-8')));
     });
-    req.on('error', reject);
+    req.on('error', (err) => {
+      // Map common network errors to user-friendly messages
+      if (err.code === 'ECONNRESET') return reject(new Error('Connection reset by server — check server URL and port'));
+      if (err.code === 'ECONNREFUSED') return reject(new Error('Connection refused — server may be down or port is wrong'));
+      if (err.code === 'ENOTFOUND') return reject(new Error('Server not found — check the server address'));
+      reject(err);
+    });
     req.setTimeout(timeoutMs, () => { req.destroy(new Error('Request timeout')); });
     req.end();
   });

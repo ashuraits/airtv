@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import Hls from 'hls.js';
 
 export default function VideoPlayer({ channel, userAgent, onVideoRef, onPlayStateChange, onError }) {
   const videoRef = useRef(null);
@@ -32,7 +33,7 @@ export default function VideoPlayer({ channel, userAgent, onVideoRef, onPlayStat
     // Reload stream without full page reload
     const video = videoRef.current;
     if (video && channel) {
-      if (window.Hls && window.Hls.isSupported()) {
+      if (Hls.isSupported()) {
         const hlsConfig = {
           enableWorker: true,
           lowLatencyMode: true,
@@ -41,16 +42,16 @@ export default function VideoPlayer({ channel, userAgent, onVideoRef, onPlayStat
         // Do not set 'User-Agent' header via XHR (blocked by browser).
         // If needed, user agent is set at BrowserWindow level.
 
-        const hls = new window.Hls(hlsConfig);
+        const hls = new Hls(hlsConfig);
         hls.loadSource(channel.url);
         hls.attachMedia(video);
         hlsRef.current = hls;
 
-        hls.on(window.Hls.Events.MANIFEST_PARSED, () => {
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
           video.play().catch(e => console.error('Playback error:', e));
         });
 
-        hls.on(window.Hls.Events.ERROR, handleHLSError);
+        hls.on(Hls.Events.ERROR, handleHLSError);
       }
     }
   };
@@ -76,6 +77,8 @@ export default function VideoPlayer({ channel, userAgent, onVideoRef, onPlayStat
   };
 
   const handleHLSError = (_event, data) => {
+    console.error('HLS error:', data);
+
     if (data.fatal) {
       const video = videoRef.current;
       const hasBuffer = video && video.buffered.length > 0 &&
@@ -113,10 +116,10 @@ export default function VideoPlayer({ channel, userAgent, onVideoRef, onPlayStat
     setCountdown(5);
     const video = videoRef.current;
 
-    // Load HLS.js dynamically
+    // Load HLS.js from npm
     const loadHLS = async () => {
-      // HLS.js is loaded via CDN in player.html
-      if (window.Hls && window.Hls.isSupported()) {
+      // HLS.js is imported from npm
+      if (Hls.isSupported()) {
         if (hlsRef.current) {
           hlsRef.current.destroy();
         }
@@ -128,19 +131,19 @@ export default function VideoPlayer({ channel, userAgent, onVideoRef, onPlayStat
 
         // Do not set 'User-Agent' header via XHR (blocked).
 
-        const hls = new window.Hls(hlsConfig);
+        const hls = new Hls(hlsConfig);
 
         hls.loadSource(channel.url);
         hls.attachMedia(video);
 
-        hls.on(window.Hls.Events.MANIFEST_PARSED, () => {
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
           video.play().catch(e => {
             console.error('Playback error:', e);
             onPlayStateChange?.(false);
           });
         });
 
-        hls.on(window.Hls.Events.ERROR, handleHLSError);
+        hls.on(Hls.Events.ERROR, handleHLSError);
 
         hlsRef.current = hls;
       } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
@@ -187,10 +190,13 @@ export default function VideoPlayer({ channel, userAgent, onVideoRef, onPlayStat
 
   return (
     <div className="video-container">
+      {/* muted required for autoplay policy; unmuted on first user interaction */}
       <video
         ref={videoRef}
         className="video-element"
         autoPlay
+        muted
+        onClick={e => { e.currentTarget.muted = false; }}
       />
       {bufferStalled && (
         <div className="video-error">
