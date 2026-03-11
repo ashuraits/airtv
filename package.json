@@ -45,7 +45,7 @@
     "electron-squirrel-startup": "^1.0.1",
     "electron-store": "^11.0.2",
     "electron-updater": "^6.6.2",
-    "hls.js": "^1.6.13",
+    "hls.js": "^1.6.15",
     "m3u8-parser": "^7.2.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"

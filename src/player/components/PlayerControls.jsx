@@ -19,7 +19,8 @@ export default function PlayerControls({
   onToggleMute,
   onClose,
   hasNext,
-  hasPrev
+  hasPrev,
+  forceShowVolume
 }) {
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -136,7 +137,7 @@ export default function PlayerControls({
           onMouseEnter={() => setShowVolumeSlider(true)}
           onMouseLeave={() => setShowVolumeSlider(false)}
         >
-          {showVolumeSlider && (
+          {(showVolumeSlider || forceShowVolume) && (
             <div className="volume-slider-container">
               <input
                 type="range"

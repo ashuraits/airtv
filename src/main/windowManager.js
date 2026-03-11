@@ -101,8 +101,16 @@ function createPlayerWindow(data) {
     } catch (_) {}
   }
 
-  // Load player HTML with channel data
-  const dataParam = encodeURIComponent(JSON.stringify(playerData));
+  // Pass only small data in query string; channelList stays in memory (playerWindows map)
+  const queryData = {
+    channel: playerData.channel,
+    currentIndex: playerData.currentIndex,
+    isFavorite: playerData.isFavorite,
+    volume: playerData.volume,
+    muted: playerData.muted,
+    userAgent: playerData.userAgent,
+  };
+  const dataParam = encodeURIComponent(JSON.stringify(queryData));
   playerWindow.loadFile(path.join(__dirname, '../../dist/player.html'), {
     query: { data: dataParam }
   });
