@@ -30,6 +30,58 @@ function buildXtreamUrl(server, user, pass) {
   return u.toString();
 }
 
+async function fetchM3UViaPlayerApi(server, user, pass, headers) {
+  // Fallback for providers that block get.php (return 884): use player_api.php instead
+  const base = ensureHttpPrefix(server).replace(/\/$/, '');
+  const buildApiUrl = (action) => {
+    const u = new URL(base + '/player_api.php');
+    u.searchParams.set('username', user);
+    u.searchParams.set('password', pass);
+    u.searchParams.set('action', action);
+    return u.toString();
+  };
+
+  const [catText, streamText] = await Promise.all([
+    fetchText(buildApiUrl('get_live_categories'), { headers }),
+    fetchText(buildApiUrl('get_live_streams'), { headers }),
+  ]);
+
+  const categories = JSON.parse(catText);
+  const streams = JSON.parse(streamText);
+
+  const catMap = {};
+  if (Array.isArray(categories)) {
+    categories.forEach(c => { catMap[c.category_id] = c.category_name || 'Uncategorized'; });
+  }
+
+  const lines = ['#EXTM3U'];
+  if (Array.isArray(streams)) {
+    streams.forEach(s => {
+      const catName = catMap[s.category_id] || 'Uncategorized';
+      const logo = s.stream_icon || '';
+      const tvgId = s.epg_channel_id || '';
+      const streamUrl = `${base}/${encodeURIComponent(user)}/${encodeURIComponent(pass)}/${s.stream_id}.ts`;
+      lines.push(`#EXTINF:-1 tvg-id="${tvgId}" tvg-logo="${logo}" group-title="${catName}",${s.name || 'Channel'}`);
+      lines.push(streamUrl);
+    });
+  }
+
+  if (lines.length === 1) throw new Error('No channels found via player API');
+  return lines.join('\n');
+}
+
+async function fetchXtreamM3U(urlStr, origin, headers, opts = {}) {
+  // Fetch Xtream M3U, falling back to player_api.php if get.php returns 884
+  try {
+    return await fetchText(urlStr, { headers, ...opts });
+  } catch (e) {
+    if (e.message && e.message.startsWith('HTTP 884')) {
+      return await fetchM3UViaPlayerApi(origin.server, origin.user, origin.pass, headers);
+    }
+    throw e;
+  }
+}
+
 function fetchText(urlStr, { headers = {}, timeoutMs = 15000, redirects = 5 } = {}) {
   // Simple Node http(s) GET returning text, follows redirects
   return new Promise((resolve, reject) => {
@@ -44,9 +96,14 @@ function fetchText(urlStr, { headers = {}, timeoutMs = 15000, redirects = 5 } = 
         return fetchText(next, { headers, timeoutMs, redirects: redirects - 1 }).then(resolve, reject);
       }
       if (res.statusCode >= 400) {
-        const msg = res.statusCode === 401 || res.statusCode === 403
-          ? `HTTP ${res.statusCode} - Check username/password`
-          : `HTTP ${res.statusCode}`;
+        let msg;
+        if (res.statusCode === 401 || res.statusCode === 403) {
+          msg = `HTTP ${res.statusCode} - Check username/password`;
+        } else if (res.statusCode === 451) {
+          msg = `HTTP 451 - Content blocked in your region (Cloudflare)`;
+        } else {
+          msg = `HTTP ${res.statusCode}`;
+        }
         return reject(new Error(msg));
       }
       const chunks = [];
@@ -82,7 +139,9 @@ async function loadM3UForSource(store, source) {
       urlStr = buildXtreamUrl(origin.server, origin.user, origin.pass);
     }
     const ua = store.get('userAgent', DEFAULT_UA);
-    return await fetchText(urlStr, { headers: { 'User-Agent': ua } });
+    const headers = { 'User-Agent': ua };
+    const origin = source.type === 'xtream' ? source.meta.origin : null;
+    return await fetchXtreamM3U(urlStr, origin, headers);
   }
   throw new Error('Unknown source type');
 }
@@ -209,7 +268,8 @@ async function testConnection(store, payload) {
       if (!origin.pass) throw new Error('Xtream password is required');
       const urlStr = buildXtreamUrl(origin.server, origin.user, origin.pass);
       const ua = store.get('userAgent', DEFAULT_UA);
-      content = await fetchText(urlStr, { headers: { 'User-Agent': ua }, timeoutMs: 10000 });
+      const headers = { 'User-Agent': ua };
+      content = await fetchXtreamM3U(urlStr, origin, headers, { timeoutMs: 10000 });
     } else {
       throw new Error('Unknown source type');
     }
@@ -280,7 +340,9 @@ async function previewCategories(store, payload) {
       urlStr = buildXtreamUrl(origin.server, origin.user, origin.pass);
     }
     const ua = store.get('userAgent', DEFAULT_UA);
-    content = await fetchText(urlStr, { headers: { 'User-Agent': ua } });
+    const headers = { 'User-Agent': ua };
+    const origin = payload.type === 'xtream' ? payload.meta.origin : null;
+    content = await fetchXtreamM3U(urlStr, origin, headers);
   } else {
     throw new Error('Unknown source type');
   }
