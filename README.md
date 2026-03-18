@@ -39,7 +39,7 @@ Or browse all [releases](https://github.com/ashuraits/airtv/releases).
 ### Player
 - 🎬 **Floating Windows** - Multiple player windows with always-on-top
 - 📌 **Pin/Unpin** - Toggle window pinning per player
-- 🎯 **HLS Streaming** - Native HLS.js support for smooth playback
+- 🎯 **HLS & MPEG-TS Streaming** - Automatic format detection with HLS.js and mpegts.js
 - 🔊 **Volume Control** - Per-window volume with gradient slider
 - ⚡ **Quick Switching** - Change channels without closing player
 
@@ -88,7 +88,7 @@ npm start
 
 - **Context Isolation**: Enabled for security
 - **IPC Communication**: Secure communication between main and renderer
-- **HLS Support**: Automatic fallback to native HLS on Safari
+- **HLS & MPEG-TS Support**: Auto-detects stream format with native HLS fallback on Safari
 - **Error Handling**: Graceful error display for failed streams
 - **Persistent Storage**: electron-store for config persistence
 
@@ -101,7 +101,6 @@ npm start
 
 ## Known Limitations
 
-- HLS streams only (`.m3u8` URLs)
 - DRM-protected content not supported
 - Some providers may have geo-restrictions
 
@@ -117,6 +116,7 @@ Built with:
 - [Electron](https://www.electronjs.org/)
 - [React](https://react.dev/)
 - [HLS.js](https://github.com/video-dev/hls.js/)
+- [mpegts.js](https://github.com/xqq/mpegts.js)
 - [electron-store](https://github.com/sindresorhus/electron-store)
 
 ---

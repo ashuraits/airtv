@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import FavoriteButton from '../../shared/components/FavoriteButton';
 
 export default function PlayerControls({
@@ -20,10 +20,12 @@ export default function PlayerControls({
   onClose,
   hasNext,
   hasPrev,
-  forceShowVolume
+  forceShowVolume,
+  keyboardMode
 }) {
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const isDraggingRef = useRef(false);
 
   const handleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -86,7 +88,8 @@ export default function PlayerControls({
         </div>
       </div>
 
-      <div className="controls-center">
+      {/* Hide play/pause and channel nav when triggered by keyboard */}
+      <div className={`controls-center ${keyboardMode ? 'hidden' : ''}`}>
         <button
           onClick={onPrev}
           disabled={!hasPrev}
@@ -135,7 +138,7 @@ export default function PlayerControls({
         <div
           className="volume-control"
           onMouseEnter={() => setShowVolumeSlider(true)}
-          onMouseLeave={() => setShowVolumeSlider(false)}
+          onMouseLeave={() => { if (!isDraggingRef.current) setShowVolumeSlider(false); }}
         >
           {(showVolumeSlider || forceShowVolume) && (
             <div className="volume-slider-container">
@@ -146,6 +149,8 @@ export default function PlayerControls({
                 step="0.01"
                 value={isMuted ? 0 : volume}
                 onChange={(e) => onVolumeChange(parseFloat(e.target.value))}
+                onMouseDown={() => { isDraggingRef.current = true; }}
+                onMouseUp={() => { isDraggingRef.current = false; setShowVolumeSlider(false); }}
                 className="volume-slider"
                 orient="vertical"
               />

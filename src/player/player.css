@@ -37,8 +37,78 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  color: white;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.video-error-card {
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(16px);
+  border-radius: 14px;
+  padding: 28px 36px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  min-width: 260px;
+  max-width: 360px;
+}
+
+.video-error-card.error-fatal {
+  border: 1px solid rgba(220, 60, 60, 0.4);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(220, 60, 60, 0.15);
+}
+
+.video-error-card.error-reconnecting {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.video-error-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.video-error-icon.icon-error {
+  background: rgba(220, 38, 38, 0.2);
+  border: 1.5px solid rgba(220, 60, 60, 0.5);
+  color: #f87171;
+}
+
+.video-error-icon.icon-reconnecting {
+  background: rgba(102, 126, 234, 0.15);
+  border: 1.5px solid rgba(102, 126, 234, 0.4);
+  color: #667eea;
+}
+
+.video-error-title {
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.video-error-subtitle {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.video-error-countdown {
+  font-size: 28px;
+  font-weight: 700;
+  color: #667eea;
+  line-height: 1;
+  margin-top: 2px;
 }
 
 /* Player Controls */
@@ -172,6 +242,10 @@
   gap: 16px;
   align-items: center;
   pointer-events: auto;
+}
+
+.controls-center.hidden {
+  display: none;
 }
 
 .control-btn {

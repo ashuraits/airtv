@@ -1,10 +1,23 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Hls from 'hls.js';
+import mpegts from 'mpegts.js';
+
+function isMpegTS(url) {
+  return /\.ts(\?|$)/i.test(url);
+}
+
+const HTTP_ERROR_MESSAGES = {
+  401: 'Invalid credentials',
+  403: 'Access denied',
+  456: 'Connection limit reached. Close other streams using this account',
+};
 
 export default function VideoPlayer({ channel, userAgent, onVideoRef, onPlayStateChange, onError }) {
   const videoRef = useRef(null);
   const hlsRef = useRef(null);
+  const mpegtsRef = useRef(null);
   const [bufferStalled, setBufferStalled] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
   const [countdown, setCountdown] = useState(5);
   const retryTimerRef = useRef(null);
   const countdownTimerRef = useRef(null);
@@ -20,46 +33,36 @@ export default function VideoPlayer({ channel, userAgent, onVideoRef, onPlayStat
     }
   };
 
-  const handleRetry = () => {
-    clearAllTimers();
-    setBufferStalled(false);
-    setCountdown(5);
-
+  const destroyPlayers = () => {
     if (hlsRef.current) {
       hlsRef.current.destroy();
       hlsRef.current = null;
     }
+    if (mpegtsRef.current) {
+      mpegtsRef.current.destroy();
+      mpegtsRef.current = null;
+    }
+  };
 
-    // Reload stream without full page reload
+  const handleRetry = () => {
+    clearAllTimers();
+    setBufferStalled(false);
+    setCountdown(5);
+    destroyPlayers();
+
     const video = videoRef.current;
-    if (video && channel) {
-      if (Hls.isSupported()) {
-        const hlsConfig = {
-          enableWorker: true,
-          lowLatencyMode: true,
-        };
+    if (!video || !channel) return;
 
-        // Do not set 'User-Agent' header via XHR (blocked by browser).
-        // If needed, user agent is set at BrowserWindow level.
-
-        const hls = new Hls(hlsConfig);
-        hls.loadSource(channel.url);
-        hls.attachMedia(video);
-        hlsRef.current = hls;
-
-        hls.on(Hls.Events.MANIFEST_PARSED, () => {
-          video.play().catch(e => console.error('Playback error:', e));
-        });
-
-        hls.on(Hls.Events.ERROR, handleHLSError);
-      }
+    if (isMpegTS(channel.url)) {
+      loadMpegTS(channel.url, video);
+    } else {
+      loadHLS(channel.url, video);
     }
   };
 
   const startBufferStalledRetry = () => {
     setCountdown(5);
 
-    // Start countdown
     let count = 5;
     countdownTimerRef.current = setInterval(() => {
       count--;
@@ -70,35 +73,92 @@ export default function VideoPlayer({ channel, userAgent, onVideoRef, onPlayStat
       }
     }, 1000);
 
-    // Retry after 5 seconds
     retryTimerRef.current = setTimeout(() => {
       handleRetry();
     }, 5000);
   };
 
+  const playWithErrorHandler = (playable) => {
+    playable.play().catch(e => {
+      console.error('Playback error:', e);
+      onPlayStateChange?.(false);
+    });
+  };
+
+  const handleStreamError = (httpStatus, logLabel) => {
+    const knownMsg = HTTP_ERROR_MESSAGES[httpStatus];
+    if (knownMsg) {
+      destroyPlayers();
+      setBufferStalled(true);
+      setErrorMessage(knownMsg);
+      if (onError) onError(true);
+      return;
+    }
+
+    const video = videoRef.current;
+    const hasBuffer = video && video.buffered.length > 0 &&
+                     video.buffered.end(video.buffered.length - 1) > video.currentTime;
+    const isPlaying = video && !video.paused && !video.ended && video.readyState > 2;
+
+    if (hasBuffer && isPlaying) {
+      console.log(`${logLabel} error, silently retrying...`);
+      retryTimerRef.current = setTimeout(() => { handleRetry(); }, 2000);
+    } else {
+      setBufferStalled(true);
+      setErrorMessage(null);
+      if (onError) onError(true);
+      startBufferStalledRetry();
+    }
+  };
+
   const handleHLSError = (_event, data) => {
+    if (!data.fatal) return;
     console.error('HLS error:', data);
+    handleStreamError(data.response?.code, 'HLS');
+  };
 
-    if (data.fatal) {
-      const video = videoRef.current;
-      const hasBuffer = video && video.buffered.length > 0 &&
-                       video.buffered.end(video.buffered.length - 1) > video.currentTime;
-      const isPlaying = video && !video.paused && !video.ended && video.readyState > 2;
+  const handleMpegTSError = (errType, errDetail) => {
+    console.error('MPEG-TS error:', errType, errDetail);
+    handleStreamError(errDetail?.code, 'MPEG-TS');
+  };
 
-      if (hasBuffer && isPlaying) {
-        // Stream error but video still playing - silent retry
-        console.log('Stream error, silently retrying in background...');
+  const loadMpegTS = (url, video) => {
+    if (!mpegts.isSupported()) {
+      setBufferStalled(true);
+      if (onError) onError(true);
+      return;
+    }
+    if (mpegtsRef.current) {
+      mpegtsRef.current.destroy();
+      mpegtsRef.current = null;
+    }
+    const player = mpegts.createPlayer({ type: 'mpegts', url, isLive: true });
+    player.attachMediaElement(video);
+    player.load();
+    player.on(mpegts.Events.ERROR, handleMpegTSError);
+    playWithErrorHandler(player);
+    mpegtsRef.current = player;
+  };
 
-        retryTimerRef.current = setTimeout(() => {
-          handleRetry();
-        }, 2000);
-      } else {
-        // Video stopped or never started - show message and auto-retry
-        setBufferStalled(true);
-        if (onError) onError(true);
-        console.error('Stream failed to load, retrying in 5 seconds...', data);
-        startBufferStalledRetry();
+  const loadHLS = (url, video) => {
+    if (Hls.isSupported()) {
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+        hlsRef.current = null;
       }
+      const hls = new Hls({ enableWorker: true, lowLatencyMode: true });
+      hls.loadSource(url);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.MANIFEST_PARSED, () => playWithErrorHandler(video));
+      hls.on(Hls.Events.ERROR, handleHLSError);
+      hlsRef.current = hls;
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      // Native HLS (Safari)
+      video.src = url;
+      video.addEventListener('loadedmetadata', () => playWithErrorHandler(video));
+    } else {
+      setBufferStalled(true);
+      if (onError) onError(true);
     }
   };
 
@@ -113,61 +173,19 @@ export default function VideoPlayer({ channel, userAgent, onVideoRef, onPlayStat
 
     clearAllTimers();
     setBufferStalled(false);
+    setErrorMessage(null);
     setCountdown(5);
     const video = videoRef.current;
 
-    // Load HLS.js from npm
-    const loadHLS = async () => {
-      // HLS.js is imported from npm
-      if (Hls.isSupported()) {
-        if (hlsRef.current) {
-          hlsRef.current.destroy();
-        }
-
-        const hlsConfig = {
-          enableWorker: true,
-          lowLatencyMode: true,
-        };
-
-        // Do not set 'User-Agent' header via XHR (blocked).
-
-        const hls = new Hls(hlsConfig);
-
-        hls.loadSource(channel.url);
-        hls.attachMedia(video);
-
-        hls.on(Hls.Events.MANIFEST_PARSED, () => {
-          video.play().catch(e => {
-            console.error('Playback error:', e);
-            onPlayStateChange?.(false);
-          });
-        });
-
-        hls.on(Hls.Events.ERROR, handleHLSError);
-
-        hlsRef.current = hls;
-      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        // Native HLS support (Safari)
-        video.src = channel.url;
-        video.addEventListener('loadedmetadata', () => {
-          video.play().catch(e => {
-            console.error('Playback error:', e);
-            onPlayStateChange?.(false);
-          });
-        });
-      } else {
-        setBufferStalled(true);
-        if (onError) onError(true);
-      }
-    };
-
-    loadHLS();
+    if (isMpegTS(channel.url)) {
+      loadMpegTS(channel.url, video);
+    } else {
+      loadHLS(channel.url, video);
+    }
 
     return () => {
       clearAllTimers();
-      if (hlsRef.current) {
-        hlsRef.current.destroy();
-      }
+      destroyPlayers();
     };
   }, [channel, onPlayStateChange]);
 
@@ -200,10 +218,27 @@ export default function VideoPlayer({ channel, userAgent, onVideoRef, onPlayStat
       />
       {bufferStalled && (
         <div className="video-error">
-          <p>Reconnecting...</p>
-          <p style={{ fontSize: '24px', marginTop: '12px', fontWeight: 'bold' }}>
-            {countdown}
-          </p>
+          {errorMessage ? (
+            <div className="video-error-card error-fatal">
+              <div className="video-error-icon icon-error">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+              </div>
+              <p className="video-error-title">{errorMessage}</p>
+            </div>
+          ) : (
+            <div className="video-error-card error-reconnecting">
+              <div className="video-error-icon icon-reconnecting">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/>
+                </svg>
+              </div>
+              <p className="video-error-title">Reconnecting</p>
+              <p className="video-error-subtitle">Retrying in</p>
+              <p className="video-error-countdown">{countdown}</p>
+            </div>
+          )}
         </div>
       )}
     </div>

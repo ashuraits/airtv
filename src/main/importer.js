@@ -101,6 +101,8 @@ function fetchText(urlStr, { headers = {}, timeoutMs = 15000, redirects = 5 } = 
           msg = `HTTP ${res.statusCode} - Check username/password`;
         } else if (res.statusCode === 451) {
           msg = `HTTP 451 - Content blocked in your region (Cloudflare)`;
+        } else if (res.statusCode === 456) {
+          msg = `HTTP 456 - Connection limit reached (account already in use)`;
         } else {
           msg = `HTTP ${res.statusCode}`;
         }

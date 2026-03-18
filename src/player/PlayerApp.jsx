@@ -18,7 +18,9 @@ export default function PlayerApp() {
   const [hasError, setHasError] = useState(false);
   const [userAgent, setUserAgent] = useState('');
   const [forceShowVolume, setForceShowVolume] = useState(false);
+  const [keyboardMode, setKeyboardMode] = useState(false);
   const volumeTimerRef = React.useRef(null);
+  const volumeSaveTimerRef = React.useRef(null);
   const inactivityTimerRef = React.useRef(null);
 
   useEffect(() => {
@@ -68,19 +70,17 @@ export default function PlayerApp() {
   // Keyboard shortcuts: Left/Right = prev/next channel, Up/Down = volume
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'ArrowRight') { e.preventDefault(); handleNext(); resetInactivityTimer(); }
-      else if (e.key === 'ArrowLeft') { e.preventDefault(); handlePrev(); resetInactivityTimer(); }
-      else if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        handleVolumeChange(Math.min(1, volume + 0.1));
-        resetInactivityTimer();
-        setForceShowVolume(true);
-        clearTimeout(volumeTimerRef.current);
-        volumeTimerRef.current = setTimeout(() => setForceShowVolume(false), 1500);
-      } else if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        handleVolumeChange(Math.max(0, volume - 0.1));
-        resetInactivityTimer();
+      const isArrow = ['ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown'].includes(e.key);
+      if (!isArrow) return;
+
+      e.preventDefault();
+      setKeyboardMode(true);
+      resetInactivityTimer();
+
+      if (e.key === 'ArrowRight') { handleNext(); }
+      else if (e.key === 'ArrowLeft') { handlePrev(); }
+      else {
+        handleVolumeChange(e.key === 'ArrowUp' ? Math.min(1, volume + 0.1) : Math.max(0, volume - 0.1));
         setForceShowVolume(true);
         clearTimeout(volumeTimerRef.current);
         volumeTimerRef.current = setTimeout(() => setForceShowVolume(false), 1500);
@@ -93,6 +93,8 @@ export default function PlayerApp() {
   // Auto-hide controls after 2 seconds of inactivity
   useEffect(() => {
     const handleMouseMove = () => {
+      // Mouse movement resets keyboard-only mode — show full controls
+      setKeyboardMode(false);
       resetInactivityTimer();
     };
 
@@ -249,13 +251,14 @@ export default function PlayerApp() {
       if (newVolume > 0 && isMuted) {
         setIsMuted(false);
         videoRef.muted = false;
-        updateURL(currentIndex, channelData, isFavorite, newVolume, false);
-        window.electronAPI.saveVolumeSettings(newVolume, false);
-      } else {
-        updateURL(currentIndex, channelData, isFavorite, newVolume, isMuted);
-        window.electronAPI.saveVolumeSettings(newVolume, isMuted);
       }
     }
+    clearTimeout(volumeSaveTimerRef.current);
+    volumeSaveTimerRef.current = setTimeout(() => {
+      const newMuted = newVolume > 0 ? false : isMuted;
+      updateURL(currentIndex, channelData, isFavorite, newVolume, newMuted);
+      window.electronAPI.saveVolumeSettings(newVolume, newMuted);
+    }, 300);
   };
 
   const handleToggleMute = () => {
@@ -316,6 +319,7 @@ export default function PlayerApp() {
         hasNext={currentIndex < channelList.length - 1}
         hasPrev={currentIndex > 0}
         forceShowVolume={forceShowVolume}
+        keyboardMode={keyboardMode}
       />
       <PlayerSidebar
         channels={channelList}
