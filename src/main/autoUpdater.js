@@ -12,6 +12,7 @@ autoUpdater.autoDownload = false;
 
 // Store main window reference
 let mainWindow = null;
+let store = null;
 let isManualCheck = false; // Track if user manually triggered check
 let updateDownloaded = false; // Track if update is already downloaded
 let downloadedVersion = null; // Track which version was downloaded
@@ -19,8 +20,9 @@ let downloadedVersion = null; // Track which version was downloaded
 /**
  * Initialize auto-updater with main window reference
  */
-function initialize(window) {
+function initialize(window, electronStore) {
   mainWindow = window;
+  store = electronStore;
 
   // Setup event handlers
   setupEventHandlers();
@@ -154,6 +156,11 @@ function setupEventHandlers() {
     log.info('Update downloaded:', info.version);
     updateDownloaded = true; // Mark as downloaded to prevent re-download
     downloadedVersion = info.version; // Store downloaded version
+
+    // Persist release notes so they can be shown after restart
+    if (store && info.releaseNotes) {
+      store.set('pendingReleaseNotes', info.releaseNotes);
+    }
 
     // Show notification that download completed
     if (Notification.isSupported()) {

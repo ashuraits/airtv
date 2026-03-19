@@ -13,6 +13,7 @@ export default function PlayerControls({
   onPlayPause,
   onNext,
   onPrev,
+  onDuplicate,
   onTogglePin,
   onToggleFavorite,
   onVolumeChange,
@@ -47,6 +48,15 @@ export default function PlayerControls({
             size={20}
             className="player-favorite-btn"
           />
+          <button onClick={onDuplicate} className="duplicate-btn" title="Duplicate window (muted)">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              {/* Back window */}
+              <rect x="4" y="4" width="9" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.5"/>
+              {/* Front window */}
+              <rect x="1" y="1" width="9" height="9" rx="1.5" fill="currentColor" fillOpacity="0.15" stroke="currentColor" strokeWidth="1.5"/>
+            </svg>
+            <span className="button-label">Duplicate</span>
+          </button>
           <button onClick={handleFullscreen} className="fullscreen-btn">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
               {isFullscreen ? (

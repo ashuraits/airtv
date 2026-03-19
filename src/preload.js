@@ -30,6 +30,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
   // Request-response from player to main
   invokeMain: (channel, data) => ipcRenderer.invoke(channel, data),
+  duplicatePlayer: () => ipcRenderer.invoke('player:duplicate'),
 
   // Multi-source APIs
   sourcesList: () => ipcRenderer.invoke('sources:list'),

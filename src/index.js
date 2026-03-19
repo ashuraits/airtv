@@ -4,6 +4,7 @@ const windowManager = require('./main/windowManager');
 const ipcHandlers = require('./main/ipcHandlers');
 const sourcesStore = require('./main/sourcesStore');
 const autoUpdater = require('./main/autoUpdater');
+const releaseNotes = require('./main/releaseNotes');
 const menu = require('./main/menu');
 const exportImport = require('./main/exportImport');
 
@@ -73,8 +74,11 @@ app.whenReady().then(() => {
 
   const mainWindow = windowManager.createMainWindow();
 
+  // Check if app was just updated and show release notes popup
+  releaseNotes.checkAndShow(mainWindow, store);
+
   // Initialize auto-updater
-  autoUpdater.initialize(mainWindow);
+  autoUpdater.initialize(mainWindow, store);
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {

@@ -8,6 +8,7 @@ import ImportWizard from './components/ImportWizard';
 import MoveToGroup from './components/MoveToGroup';
 import { FavoriteIcon } from '../shared/components/FavoriteButton';
 import StartupSyncModal from './components/StartupSyncModal';
+import WhatsNew from './components/WhatsNew';
 import { ToastProvider, useToast } from './components/Toast';
 
 function AppInner() {
@@ -28,10 +29,18 @@ function AppInner() {
   const [selectedIds, setSelectedIds] = useState([]);
   const [startupPreviews, setStartupPreviews] = useState([]);
   const [showStartupModal, setShowStartupModal] = useState(false);
+  const [whatsNew, setWhatsNew] = useState(null); // { version, notes }
   // no legacy flag
 
   useEffect(() => {
     init();
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = window.electronAPI.onFromMain('whats-new', (data) => {
+      setWhatsNew(data);
+    });
+    return () => { try { unsubscribe && unsubscribe(); } catch (_) {} };
   }, []);
 
   // Listen for library refresh notifications from main (e.g., Settings re-sync)
@@ -417,6 +426,11 @@ function AppInner() {
             await refreshChannels();
             show('Moved');
           }}
+        />
+        <WhatsNew
+          version={whatsNew?.version}
+          notes={whatsNew?.notes}
+          onClose={() => setWhatsNew(null)}
         />
         <StartupSyncModal
           open={showStartupModal}

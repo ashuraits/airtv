@@ -278,6 +278,10 @@ export default function PlayerApp() {
     }
   }, [videoRef, volume, isMuted]);
 
+  const handleDuplicate = () => {
+    window.electronAPI.duplicatePlayer();
+  };
+
   const handleClose = () => {
     window.electronAPI.closePlayer();
   };
@@ -311,6 +315,7 @@ export default function PlayerApp() {
         onPlayPause={handlePlayPause}
         onNext={handleNext}
         onPrev={handlePrev}
+        onDuplicate={handleDuplicate}
         onTogglePin={handleTogglePin}
         onToggleFavorite={handleToggleFavorite}
         onVolumeChange={handleVolumeChange}

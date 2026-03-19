@@ -1373,3 +1373,114 @@ input[type="checkbox"]:checked::after {
   }
 }
 
+/* What's New modal */
+.whats-new-modal {
+  width: 460px;
+  max-width: calc(100vw - 40px);
+  background: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 32px 100px rgba(0, 0, 0, 0.7);
+  animation: modalSlideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.whats-new-hero {
+  position: relative;
+  padding: 32px 28px 24px;
+  background: linear-gradient(135deg, #1a1040 0%, #0f1a2e 100%);
+  border-bottom: 1px solid #2a2a3a;
+  overflow: hidden;
+}
+
+.whats-new-hero-glow {
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(102, 126, 234, 0.3) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.whats-new-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(102, 126, 234, 0.2);
+  border: 1px solid rgba(102, 126, 234, 0.5);
+  color: #a0b4f8;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 3px 9px;
+  border-radius: 20px;
+  margin-bottom: 12px;
+}
+
+.whats-new-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.2;
+}
+
+.whats-new-version {
+  background: linear-gradient(135deg, #667eea 0%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.whats-new-body {
+  padding: 20px 28px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.whats-new-section-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #555;
+  margin: 16px 0 8px 0;
+}
+
+.whats-new-section-title:first-child {
+  margin-top: 0;
+}
+
+.whats-new-item {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 5px 0;
+  color: #bbb;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.whats-new-bullet {
+  color: #667eea;
+  font-size: 8px;
+  flex-shrink: 0;
+  position: relative;
+  top: -1px;
+}
+
+.whats-new-text {
+  color: #bbb;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.whats-new-footer {
+  padding: 16px 28px 20px;
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid #2a2a2a;
+}
+
+

@@ -171,6 +171,17 @@ function registerHandlers(store, sourcesStore, playerWindows, getMainWindow, get
     });
   });
 
+  // Duplicate current player window (muted)
+  ipcMain.handle('player:duplicate', async (event) => {
+    const senderWindow = BrowserWindow.fromWebContents(event.sender);
+    for (const [, { window, data }] of playerWindows.entries()) {
+      if (window === senderWindow) {
+        createPlayerWindow({ ...data, muted: true });
+        return;
+      }
+    }
+  });
+
   // Get player window info
   ipcMain.handle('player:get-info', async (event) => {
     const senderWindow = BrowserWindow.fromWebContents(event.sender);
