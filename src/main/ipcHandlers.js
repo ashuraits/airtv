@@ -195,7 +195,19 @@ function registerHandlers(store, sourcesStore, playerWindows, getMainWindow, get
     const senderWindow = BrowserWindow.fromWebContents(event.sender);
     for (const [, { window, data }] of playerWindows.entries()) {
       if (window === senderWindow) {
-        createPlayerWindow({ ...data, muted: true });
+        // Read current channel/index from the window's URL (updated via history.replaceState)
+        // but keep channelList from stored data (it's too large for the URL)
+        const currentURL = senderWindow.webContents.getURL();
+        let currentData = data;
+        try {
+          const url = new URL(currentURL);
+          const dataParam = url.searchParams.get('data');
+          if (dataParam) {
+            const urlData = JSON.parse(decodeURIComponent(dataParam));
+            currentData = { ...data, ...urlData, channelList: data.channelList };
+          }
+        } catch (_) {}
+        createPlayerWindow({ ...currentData, muted: true });
         return;
       }
     }
