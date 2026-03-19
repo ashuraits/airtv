@@ -19,6 +19,7 @@ export default function PlayerApp() {
   const [userAgent, setUserAgent] = useState('');
   const [forceShowVolume, setForceShowVolume] = useState(false);
   const [keyboardMode, setKeyboardMode] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const volumeTimerRef = React.useRef(null);
   const volumeSaveTimerRef = React.useRef(null);
   const inactivityTimerRef = React.useRef(null);
@@ -111,8 +112,9 @@ export default function PlayerApp() {
         return;
       }
 
-      // Hide controls immediately on video area click
+      // Hide controls and sidebar immediately on video area click
       setShowControls(false);
+      setIsSidebarOpen(false);
 
       // Clear any existing timer
       if (inactivityTimerRef.current) {
@@ -330,8 +332,9 @@ export default function PlayerApp() {
         channels={channelList}
         currentIndex={currentIndex}
         favorites={favorites}
-        showControls={showControls}
         onChannelSelect={handleChannelSelect}
+        isOpen={isSidebarOpen}
+        onOpenChange={setIsSidebarOpen}
       />
     </div>
   );

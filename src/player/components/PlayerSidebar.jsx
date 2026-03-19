@@ -1,39 +1,34 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import ChannelListItem from './ChannelListItem';
 
-export default function PlayerSidebar({ channels, currentIndex, favorites, showControls, onChannelSelect }) {
-  const [isHovered, setIsHovered] = useState(false);
-
+export default function PlayerSidebar({ channels, currentIndex, favorites, onChannelSelect, isOpen, onOpenChange }) {
   // Hide sidebar when mouse leaves window
   useEffect(() => {
     const handleMouseLeave = (e) => {
       // Check if mouse left the window bounds
       if (e.clientY <= 0 || e.clientX <= 0 ||
           e.clientX >= window.innerWidth || e.clientY >= window.innerHeight) {
-        setIsHovered(false);
+        onOpenChange(false);
       }
     };
 
     document.addEventListener('mouseout', handleMouseLeave);
     return () => document.removeEventListener('mouseout', handleMouseLeave);
-  }, []);
+  }, [onOpenChange]);
 
   if (!channels || channels.length === 0) {
     return null;
   }
 
-  // Show sidebar if it is hovered (ignore showControls to prevent auto-hide while scrolling/interacting)
-  const isSidebarVisible = isHovered;
-
   return (
     <>
       <div
         className="sidebar-trigger"
-        onMouseEnter={() => setIsHovered(true)}
+        onMouseEnter={() => onOpenChange(true)}
       />
       <div
-        className={`player-sidebar ${isSidebarVisible ? 'visible' : ''}`}
-        onMouseLeave={() => setIsHovered(false)}
+        className={`player-sidebar ${isOpen ? 'visible' : ''}`}
+        onMouseLeave={() => onOpenChange(false)}
       >
         <div className="player-sidebar-header">
           <h3>Channels ({channels.length})</h3>
