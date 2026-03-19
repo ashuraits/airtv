@@ -10,6 +10,13 @@ function renderNotes(notes) {
     if (line.startsWith('### ') || line.startsWith('## ')) {
       const text = line.replace(/^#+\s*/, '');
       elements.push(<div key={key++} className="whats-new-section-title">{text}</div>);
+    } else if (/^ {2,}- /.test(line)) {
+      elements.push(
+        <div key={key++} className="whats-new-item whats-new-item-sub">
+          <span className="whats-new-bullet">·</span>
+          <span>{line.replace(/^ +- /, '')}</span>
+        </div>
+      );
     } else if (line.startsWith('- ')) {
       elements.push(
         <div key={key++} className="whats-new-item">

@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.5.2] - 2026-03-19
+
+### New Features
+- Added proxy support for video streams
+  - Open Settings and find the Proxy section
+  - Enable the toggle, select protocol (HTTP, HTTPS, or SOCKS5), enter host and port
+  - Click "Save Changes" — the proxy is applied immediately
+
+### Improvements
+- Clicking on empty space in the sidebar now closes it
+
 ## [0.5.1] - 2026-03-19
 
 ### New Features
