@@ -17,6 +17,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   openSettings: () => ipcRenderer.invoke('open-settings'),
   getSettings: () => ipcRenderer.invoke('get-settings'),
   saveSettings: (settings) => ipcRenderer.invoke('save-settings', settings),
+  proxyTest: (host, port, protocol) => ipcRenderer.invoke('proxy:test', { host, port, protocol }),
   openM3UDialog: () => ipcRenderer.invoke('open-m3u-dialog'),
 
   // Bidirectional communication main <-> player

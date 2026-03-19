@@ -7,6 +7,7 @@ const autoUpdater = require('./main/autoUpdater');
 const releaseNotes = require('./main/releaseNotes');
 const menu = require('./main/menu');
 const exportImport = require('./main/exportImport');
+const proxy = require('./main/proxy');
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -58,6 +59,7 @@ ipcHandlers.registerHandlers(
 
 // App lifecycle
 app.whenReady().then(() => {
+  proxy.apply(store);
   // Setup menu with settings, updates, and export/import
   menu.setSettingsWindowCreator(windowManager.createSettingsWindow);
   menu.setCheckForUpdates(autoUpdater.checkForUpdates);

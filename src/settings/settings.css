@@ -90,11 +90,21 @@
 }
 
 .settings-card {
-  padding: 20px;
+  padding: 0;
   background: #252525;
   border: 1px solid #333;
   border-radius: 8px;
   transition: all 0.2s;
+  overflow: hidden;
+}
+
+.settings-card-section {
+  padding: 20px;
+}
+
+.settings-card-divider {
+  height: 1px;
+  background: #333;
 }
 
 .settings-card:hover {
@@ -142,12 +152,41 @@
   color: #666;
 }
 
+.settings-input {
+  padding: 10px 12px;
+  background: #1a1a1a;
+  border: 1px solid #404040;
+  border-radius: 8px;
+  color: #e0e0e0;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+
+select.settings-input {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23999' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 30px;
+  cursor: pointer;
+}
+
+.settings-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.settings-input::placeholder {
+  color: #666;
+}
+
 .settings-actions {
   display: flex;
   gap: 8px;
-  margin-top: 16px;
-  padding-top: 16px;
+  padding: 16px 20px;
   border-top: 1px solid #333;
+  justify-content: flex-end;
 }
 
 .btn-primary,

@@ -9,6 +9,11 @@ function SettingsAppInner() {
   const [activeSection, setActiveSection] = useState('player');
   const [userAgent, setUserAgent] = useState(DEFAULT_USER_AGENT);
   const [tempUserAgent, setTempUserAgent] = useState(DEFAULT_USER_AGENT);
+  const [proxyEnabled, setProxyEnabled] = useState(false);
+  const [proxyProtocol, setProxyProtocol] = useState('http');
+  const [proxyHost, setProxyHost] = useState('');
+  const [proxyPort, setProxyPort] = useState('');
+  const [savedProxy, setSavedProxy] = useState({ enabled: false, protocol: 'http', host: '', port: '' });
   const [sources, setSources] = useState([]);
   const [resyncState, setResyncState] = useState({ open: false, source: null, counts: null });
   const { show } = useToast();
@@ -23,16 +28,38 @@ function SettingsAppInner() {
     const ua = settings.userAgent || DEFAULT_USER_AGENT;
     setUserAgent(ua);
     setTempUserAgent(ua);
+    setProxyEnabled(!!settings.proxyEnabled);
+    setProxyProtocol(settings.proxyProtocol || 'http');
+    setProxyHost(settings.proxyHost || '');
+    setProxyPort(settings.proxyPort || '');
+    setSavedProxy({ enabled: !!settings.proxyEnabled, protocol: settings.proxyProtocol || 'http', host: settings.proxyHost || '', port: settings.proxyPort || '' });
   };
 
   const handleSave = async () => {
-    await window.electronAPI.saveSettings({ userAgent: tempUserAgent });
+    if (proxyEnabled && proxyChanged) {
+      const res = await window.electronAPI.proxyTest(proxyHost, proxyPort, proxyProtocol);
+      if (!res.success) {
+        show(`Proxy unreachable: ${res.error}`, 'error');
+        return;
+      }
+    }
+    await window.electronAPI.saveSettings({
+      userAgent: tempUserAgent,
+      proxyEnabled,
+      proxyProtocol,
+      proxyHost,
+      proxyPort,
+    });
     setUserAgent(tempUserAgent);
+    setSavedProxy({ enabled: proxyEnabled, protocol: proxyProtocol, host: proxyHost, port: proxyPort });
+    show('Settings saved');
   };
 
   const handleReset = () => {
     setTempUserAgent(DEFAULT_USER_AGENT);
   };
+
+  const proxyChanged = proxyEnabled !== savedProxy.enabled || proxyProtocol !== savedProxy.protocol || proxyHost !== savedProxy.host || proxyPort !== savedProxy.port;
 
   // Sources management
   
@@ -112,33 +139,83 @@ function SettingsAppInner() {
 
             <div className="settings-group">
               <div className="settings-card">
-                <label className="settings-label">
-                  User-Agent
-                  <span className="settings-hint">Custom User-Agent string used for HLS stream requests</span>
-                </label>
-                <textarea
-                  className="settings-textarea"
-                  value={tempUserAgent}
-                  onChange={(e) => setTempUserAgent(e.target.value)}
-                  rows={4}
-                  placeholder="Enter custom User-Agent..."
-                />
-                <div className="settings-actions">
-                  <button
-                    className="btn-secondary"
-                    onClick={handleReset}
-                    disabled={tempUserAgent === DEFAULT_USER_AGENT}
-                  >
-                    Reset to Default
-                  </button>
+
+                <div className="settings-card-section">
+                  <label className="settings-label">
+                    User-Agent
+                    <span className="settings-hint">Custom User-Agent string used for stream requests</span>
+                  </label>
+                  <textarea
+                    className="settings-textarea"
+                    value={tempUserAgent}
+                    onChange={(e) => setTempUserAgent(e.target.value)}
+                    rows={3}
+                    placeholder="Enter custom User-Agent..."
+                  />
+                  <div style={{ marginTop: 8 }}>
+                    <button
+                      className="btn-secondary"
+                      onClick={handleReset}
+                      disabled={tempUserAgent === DEFAULT_USER_AGENT}
+                    >
+                      Reset to Default
+                    </button>
+                  </div>
+                </div>
+
+                <div className="settings-card-divider" />
+
+                <div className="settings-card-section">
+                  <label className="settings-label">
+                    Proxy
+                    <span className="settings-hint">Route video stream traffic through a proxy server</span>
+                  </label>
+                  <label className="source-toggle" style={{ marginBottom: 10 }}>
+                    <input type="checkbox" checked={proxyEnabled} onChange={(e) => setProxyEnabled(e.target.checked)} />
+                    <span>Enable proxy</span>
+                  </label>
+                  {proxyEnabled && (
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <select
+                        className="settings-input"
+                        style={{ width: 100 }}
+                        value={proxyProtocol}
+                        onChange={(e) => setProxyProtocol(e.target.value)}
+                      >
+                        <option value="http">HTTP</option>
+                        <option value="https">HTTPS</option>
+                        <option value="socks5">SOCKS5</option>
+                      </select>
+                      <input
+                        className="settings-input"
+                        style={{ flex: 1 }}
+                        type="text"
+                        placeholder="Host (e.g. 127.0.0.1)"
+                        value={proxyHost}
+                        onChange={(e) => setProxyHost(e.target.value)}
+                      />
+                      <input
+                        className="settings-input"
+                        style={{ width: 90 }}
+                        type="text"
+                        placeholder="Port"
+                        value={proxyPort}
+                        onChange={(e) => setProxyPort(e.target.value)}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div className="settings-actions" style={{ marginTop: 0 }}>
                   <button
                     className="btn-primary"
                     onClick={handleSave}
-                    disabled={tempUserAgent === userAgent}
+                    disabled={tempUserAgent === userAgent && !proxyChanged}
                   >
                     Save Changes
                   </button>
                 </div>
+
               </div>
             </div>
           </div>

@@ -1,4 +1,5 @@
 const { ipcMain, dialog, BrowserWindow } = require('electron');
+const proxy = require('./proxy');
 const { parseM3UFile } = require('./playlistParser');
 
 /**
@@ -141,7 +142,11 @@ function registerHandlers(store, sourcesStore, playerWindows, getMainWindow, get
 
   ipcMain.handle('get-settings', async () => {
     return {
-      userAgent: store.get('userAgent', 'Mozilla/5.0 (QtEmbedded; U; Linux; C) AppleWebKit/533.3 (KHTML, like Gecko) MAG200 stbapp ver: 2 rev: 250 Safari/533.3')
+      userAgent: store.get('userAgent', 'Mozilla/5.0 (QtEmbedded; U; Linux; C) AppleWebKit/533.3 (KHTML, like Gecko) MAG200 stbapp ver: 2 rev: 250 Safari/533.3'),
+      proxyEnabled: store.get('proxyEnabled', false),
+      proxyProtocol: store.get('proxyProtocol', 'http'),
+      proxyHost: store.get('proxyHost', ''),
+      proxyPort: store.get('proxyPort', ''),
     };
   });
 
@@ -149,7 +154,21 @@ function registerHandlers(store, sourcesStore, playerWindows, getMainWindow, get
     if (settings.userAgent !== undefined) {
       store.set('userAgent', settings.userAgent);
     }
+    if (settings.proxyEnabled !== undefined) store.set('proxyEnabled', settings.proxyEnabled);
+    if (settings.proxyProtocol !== undefined) store.set('proxyProtocol', settings.proxyProtocol);
+    if (settings.proxyHost !== undefined) store.set('proxyHost', settings.proxyHost);
+    if (settings.proxyPort !== undefined) store.set('proxyPort', settings.proxyPort);
+    proxy.apply(store);
     return { success: true };
+  });
+
+  ipcMain.handle('proxy:test', async (event, { host, port, protocol }) => {
+    try {
+      await proxy.test(host, port, protocol);
+      return { success: true };
+    } catch (e) {
+      return { success: false, error: e.message };
+    }
   });
 
   // Broadcast message to all player windows (except sender)
@@ -309,6 +328,4 @@ function registerHandlers(store, sourcesStore, playerWindows, getMainWindow, get
   });
 }
 
-module.exports = {
-  registerHandlers
-};
+module.exports = { registerHandlers };
