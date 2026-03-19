@@ -1,7 +1,9 @@
 import React, { useState, useRef } from 'react';
 import FavoriteButton from '../../shared/components/FavoriteButton';
+import AddToGroupButton from './AddToGroupButton';
 
 export default function PlayerControls({
+  channel,
   channelName,
   isPlaying,
   isPinned,
@@ -22,7 +24,8 @@ export default function PlayerControls({
   hasNext,
   hasPrev,
   forceShowVolume,
-  keyboardMode
+  keyboardMode,
+  pickerOpenRef
 }) {
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -48,6 +51,7 @@ export default function PlayerControls({
             size={20}
             className="player-favorite-btn"
           />
+          <AddToGroupButton channel={channel} pickerOpenRef={pickerOpenRef} />
           <button onClick={onDuplicate} className="duplicate-btn" title="Duplicate window (muted)">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
               {/* Back window */}

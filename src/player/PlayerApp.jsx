@@ -23,6 +23,7 @@ export default function PlayerApp() {
   const volumeTimerRef = React.useRef(null);
   const volumeSaveTimerRef = React.useRef(null);
   const inactivityTimerRef = React.useRef(null);
+  const isPickerOpenRef = React.useRef(false);
 
   useEffect(() => {
     // Parse channel data from query params
@@ -64,7 +65,7 @@ export default function PlayerApp() {
 
     // Set new timer to hide controls after 2 seconds
     inactivityTimerRef.current = setTimeout(() => {
-      setShowControls(false);
+      if (!isPickerOpenRef.current) setShowControls(false);
     }, 2000);
   }, []);
 
@@ -306,6 +307,7 @@ export default function PlayerApp() {
         onError={setHasError}
       />
       <PlayerControls
+        channel={channelData}
         channelName={channelData.name}
         isPlaying={isPlaying}
         isPinned={isPinned}
@@ -327,6 +329,7 @@ export default function PlayerApp() {
         hasPrev={currentIndex > 0}
         forceShowVolume={forceShowVolume}
         keyboardMode={keyboardMode}
+        pickerOpenRef={isPickerOpenRef}
       />
       <PlayerSidebar
         channels={channelList}

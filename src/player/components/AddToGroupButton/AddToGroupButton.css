@@ -1,0 +1,226 @@
+.atg-wrapper {
+  position: relative;
+}
+
+/* ── Trigger button ─────────────────────────────────────────────────────── */
+.add-to-group-btn .button-label {
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0;
+  max-width: 0;
+  overflow: hidden;
+  transition: all 0.4s ease-out;
+}
+
+.add-to-group-btn.active {
+  background: rgba(255, 255, 255, 0.2) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  transform: translateY(-1px) !important;
+  width: auto !important;
+  padding: 10px 14px !important;
+  gap: 8px !important;
+}
+
+.add-to-group-btn.active .button-label {
+  opacity: 1;
+  max-width: 150px;
+}
+
+/* ── Popup — matches sidebar aesthetic ──────────────────────────────────── */
+.atg-popup {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: max-content;
+  min-width: 230px;
+  max-width: 300px;
+  background: rgba(26, 26, 26, 0.40);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  z-index: 300;
+  animation: atg-fade-in 0.15s ease-out;
+}
+
+@keyframes atg-fade-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+.atg-header {
+  padding: 12px 16px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(37, 37, 37, 0.2);
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ── Group list ─────────────────────────────────────────────────────────── */
+.atg-list {
+  display: flex;
+  flex-direction: column;
+  padding: 6px 0;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.atg-list::-webkit-scrollbar { width: 6px; }
+.atg-list::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); }
+.atg-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+.atg-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.atg-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.15s;
+  border-left: 3px solid transparent;
+}
+
+.atg-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-left-color: rgba(255, 255, 255, 0.3);
+}
+
+.atg-item svg {
+  flex-shrink: 0;
+  opacity: 0.5;
+}
+
+.atg-item-current {
+  background: rgba(102, 126, 234, 0.2);
+  border-left-color: #667eea;
+  color: white;
+  font-weight: 500;
+}
+
+.atg-item-current:hover {
+  background: rgba(102, 126, 234, 0.25) !important;
+  border-left-color: #667eea !important;
+}
+
+.atg-item-current svg {
+  opacity: 1;
+  color: #667eea;
+}
+
+.atg-current-mark {
+  margin-left: auto;
+  font-size: 11px;
+  color: #667eea;
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+
+.atg-item-ungrouped {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* ── Divider ────────────────────────────────────────────────────────────── */
+.atg-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 0;
+}
+
+/* ── New group row ──────────────────────────────────────────────────────── */
+.atg-new {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+}
+
+.atg-input {
+  flex: 1;
+  min-width: 0;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  color: white;
+  font-size: 14px;
+  font-family: inherit;
+  padding: 7px 10px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.atg-input::placeholder {
+  color: rgba(255, 255, 255, 0.25);
+}
+
+.atg-input:focus {
+  border-color: rgba(102, 126, 234, 0.5);
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.atg-create-btn {
+  width: 32px !important;
+  height: 32px !important;
+  flex-shrink: 0;
+  border-radius: 6px !important;
+  background: rgba(102, 126, 234, 0.2) !important;
+  border: 1px solid rgba(102, 126, 234, 0.35) !important;
+  color: #667eea !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: background 0.15s !important;
+  padding: 0 !important;
+}
+
+.atg-create-btn:hover:not(:disabled) {
+  background: rgba(102, 126, 234, 0.35) !important;
+}
+
+.atg-create-btn:disabled {
+  opacity: 0.3 !important;
+  cursor: not-allowed !important;
+}
+
+/* ── Success state ──────────────────────────────────────────────────────── */
+.atg-success {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px;
+  color: #4ade80;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.atg-undo-btn {
+  margin-left: 4px;
+  padding: 3px 10px;
+  border-radius: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.atg-undo-btn:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: white !important;
+}
