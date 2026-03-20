@@ -49,8 +49,10 @@ function AppInner() {
       try {
         const srcs = await window.electronAPI.sourcesList();
         const grps = await window.electronAPI.groupsList();
+        const favs = await window.electronAPI.getFavorites();
         setSources(srcs || []);
         setGroups(grps || []);
+        setFavorites(favs || []);
         await refreshChannels(srcs, sourceFilter);
       } catch (e) {
         console.error('Failed to refresh library:', e);

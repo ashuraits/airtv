@@ -118,6 +118,7 @@ function registerHandlers(store, sourcesStore, playerWindows, getMainWindow, get
     if (!exists) {
       favorites.push(channel);
       store.set('favorites', favorites);
+      notifyLibraryChanged();
     }
     return favorites;
   });
@@ -126,6 +127,7 @@ function registerHandlers(store, sourcesStore, playerWindows, getMainWindow, get
     const favorites = store.get('favorites', []);
     const filtered = favorites.filter(f => f.url !== channelUrl);
     store.set('favorites', filtered);
+    notifyLibraryChanged();
     return filtered;
   });
 
