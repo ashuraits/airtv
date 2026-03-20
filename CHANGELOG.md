@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.6.1] - 2026-03-21
+
+### Improvements
+- Improved compatibility with Xtream providers — channels now load more reliably by using the JSON API first, with legacy fallback
+
 ## [0.6.0] - 2026-03-20
 
 ### New Features

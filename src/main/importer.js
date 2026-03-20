@@ -31,7 +31,7 @@ function buildXtreamUrl(server, user, pass) {
 }
 
 async function fetchM3UViaPlayerApi(server, user, pass, headers) {
-  // Fallback for providers that block get.php (return 884): use player_api.php instead
+  // Build a synthetic live M3U from Xtream's JSON API.
   const base = ensureHttpPrefix(server).replace(/\/$/, '');
   const buildApiUrl = (action) => {
     const u = new URL(base + '/player_api.php');
@@ -70,16 +70,35 @@ async function fetchM3UViaPlayerApi(server, user, pass, headers) {
   return lines.join('\n');
 }
 
-async function fetchXtreamM3U(urlStr, origin, headers, opts = {}) {
-  // Fetch Xtream M3U, falling back to player_api.php if get.php returns 884
-  try {
-    return await fetchText(urlStr, { headers, ...opts });
-  } catch (e) {
-    if (e.message && e.message.startsWith('HTTP 884')) {
-      return await fetchM3UViaPlayerApi(origin.server, origin.user, origin.pass, headers);
-    }
-    throw e;
+async function fetchXtreamM3UThroughPrimaryApi(origin, headers, opts = {}) {
+  if (!origin?.server || !origin?.user || !origin?.pass) {
+    throw new Error('Missing Xtream credentials');
   }
+
+  try {
+    return await fetchM3UViaPlayerApi(
+      origin.server,
+      origin.user,
+      origin.pass,
+      headers,
+      opts
+    );
+  } catch (playerApiError) {
+    const legacyUrl = buildXtreamUrl(origin.server, origin.user, origin.pass);
+    try {
+      return await fetchText(legacyUrl, { headers, ...opts });
+    } catch (legacyError) {
+      throw playerApiError;
+    }
+  }
+}
+
+async function fetchXtreamM3U(urlStr, origin, headers, opts = {}) {
+  // For Xtream sources, prefer player_api.php and keep get.php as a legacy fallback.
+  if (origin) {
+    return await fetchXtreamM3UThroughPrimaryApi(origin, headers, opts);
+  }
+  return await fetchText(urlStr, { headers, ...opts });
 }
 
 function fetchText(urlStr, { headers = {}, timeoutMs = 15000, redirects = 5 } = {}) {
