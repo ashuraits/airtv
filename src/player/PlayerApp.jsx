@@ -123,9 +123,24 @@ export default function PlayerApp() {
       }
     };
 
+    const handleDblClick = (e) => {
+      const isControlClick = e.target.closest('.player-controls') ||
+                            e.target.closest('.player-sidebar') ||
+                            e.target.closest('.sidebar-trigger') ||
+                            e.target.closest('.volume-control-wrapper');
+      if (isControlClick) return;
+
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        document.exitFullscreen();
+      }
+    };
+
     // Add event listeners
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('click', handleClick);
+    document.addEventListener('dblclick', handleDblClick);
 
     // Initial timer
     resetInactivityTimer();
@@ -134,6 +149,7 @@ export default function PlayerApp() {
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('click', handleClick);
+      document.removeEventListener('dblclick', handleDblClick);
       if (inactivityTimerRef.current) {
         clearTimeout(inactivityTimerRef.current);
       }

@@ -214,7 +214,6 @@ export default function VideoPlayer({ channel, userAgent, onVideoRef, onPlayStat
         className="video-element"
         autoPlay
         muted
-        onClick={e => { e.currentTarget.muted = false; }}
       />
       {bufferStalled && (
         <div className="video-error">
