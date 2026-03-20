@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.6.0] - 2026-03-20
+
+### New Features
+- "Move to Group" button in the player — reassign a channel to a different group without opening the main window
+- PageUp/PageDown and media key support for channel switching
+
+### Improvements
+- Double-click video to toggle fullscreen
+- Fixed: clicking video no longer accidentally unmutes muted playback
+- Add to Favorites button now syncs with the main window instantly
+- Duplicate player opens with the currently playing channel
+
 ## [0.5.2] - 2026-03-19
 
 ### New Features
