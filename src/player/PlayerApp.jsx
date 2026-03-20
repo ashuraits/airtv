@@ -73,14 +73,15 @@ export default function PlayerApp() {
   useEffect(() => {
     const handleKeyDown = (e) => {
       const isArrow = ['ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown'].includes(e.key);
-      if (!isArrow) return;
+      const isChannelKey = ['PageUp', 'PageDown', 'MediaTrackNext', 'MediaTrackPrevious'].includes(e.key);
+      if (!isArrow && !isChannelKey) return;
 
       e.preventDefault();
       setKeyboardMode(true);
       resetInactivityTimer();
 
-      if (e.key === 'ArrowRight') { handleNext(); }
-      else if (e.key === 'ArrowLeft') { handlePrev(); }
+      if (e.key === 'ArrowRight' || e.key === 'MediaTrackNext' || e.key === 'PageDown') { handleNext(); }
+      else if (e.key === 'ArrowLeft' || e.key === 'MediaTrackPrevious' || e.key === 'PageUp') { handlePrev(); }
       else {
         handleVolumeChange(e.key === 'ArrowUp' ? Math.min(1, volume + 0.1) : Math.max(0, volume - 0.1));
         setForceShowVolume(true);
