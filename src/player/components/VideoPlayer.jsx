@@ -21,6 +21,8 @@ export default function VideoPlayer({ channel, userAgent, onVideoRef, onPlayStat
   const [countdown, setCountdown] = useState(5);
   const retryTimerRef = useRef(null);
   const countdownTimerRef = useRef(null);
+  const stallWatcherRef = useRef(null);
+  const lastTimeRef = useRef(null);
 
   const clearAllTimers = () => {
     if (retryTimerRef.current) {
@@ -31,6 +33,29 @@ export default function VideoPlayer({ channel, userAgent, onVideoRef, onPlayStat
       clearInterval(countdownTimerRef.current);
       countdownTimerRef.current = null;
     }
+    if (stallWatcherRef.current) {
+      clearInterval(stallWatcherRef.current);
+      stallWatcherRef.current = null;
+    }
+  };
+
+  const startStallWatcher = () => {
+    if (stallWatcherRef.current) return;
+    lastTimeRef.current = null;
+    stallWatcherRef.current = setInterval(() => {
+      const video = videoRef.current;
+      if (!video || video.paused || video.ended) return;
+      if (lastTimeRef.current !== null && video.currentTime === lastTimeRef.current) {
+        console.warn('[stall watcher] currentTime frozen at', video.currentTime, '— triggering retry');
+        clearInterval(stallWatcherRef.current);
+        stallWatcherRef.current = null;
+        setBufferStalled(true);
+        setErrorMessage(null);
+        if (onError) onError(true);
+        startBufferStalledRetry();
+      }
+      lastTimeRef.current = video.currentTime;
+    }, 3000);
   };
 
   const destroyPlayers = () => {
@@ -196,13 +221,26 @@ export default function VideoPlayer({ channel, userAgent, onVideoRef, onPlayStat
 
     const handlePlay = () => onPlayStateChange?.(true);
     const handlePause = () => onPlayStateChange?.(false);
+    const handlePlaying = () => {
+      setBufferStalled(prev => {
+        if (prev) {
+          clearAllTimers();
+          setCountdown(5);
+        }
+        return false;
+      });
+      if (onError) onError(false);
+      startStallWatcher();
+    };
 
     video.addEventListener('play', handlePlay);
     video.addEventListener('pause', handlePause);
+    video.addEventListener('playing', handlePlaying);
 
     return () => {
       video.removeEventListener('play', handlePlay);
       video.removeEventListener('pause', handlePause);
+      video.removeEventListener('playing', handlePlaying);
     };
   }, [onPlayStateChange]);
 
