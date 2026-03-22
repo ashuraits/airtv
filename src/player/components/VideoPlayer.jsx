@@ -16,7 +16,7 @@ export default function VideoPlayer({ channel, userAgent, onVideoRef, onPlayStat
   const videoRef = useRef(null);
   const hlsRef = useRef(null);
   const mpegtsRef = useRef(null);
-  const [bufferStalled, setBufferStalled] = useState(false);
+  const [showErrorOverlay, setShowErrorOverlay] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
   const [countdown, setCountdown] = useState(5);
   const retryTimerRef = useRef(null);
@@ -39,20 +39,27 @@ export default function VideoPlayer({ channel, userAgent, onVideoRef, onPlayStat
     }
   };
 
-  const startStallWatcher = () => {
+  const startStallWatcher = (isSilentRetry = false) => {
     if (stallWatcherRef.current) return;
     lastTimeRef.current = null;
     stallWatcherRef.current = setInterval(() => {
       const video = videoRef.current;
       if (!video || video.paused || video.ended) return;
       if (lastTimeRef.current !== null && video.currentTime === lastTimeRef.current) {
-        console.warn('[stall watcher] currentTime frozen at', video.currentTime, '— triggering retry');
         clearInterval(stallWatcherRef.current);
         stallWatcherRef.current = null;
-        setBufferStalled(true);
-        setErrorMessage(null);
-        if (onError) onError(true);
-        startBufferStalledRetry();
+        if (!isSilentRetry) {
+          console.warn('[stall watcher] currentTime frozen at', video.currentTime, '— silent retry');
+          destroyPlayers();
+          loadStream(channel.url, video);
+          startStallWatcher(true);
+        } else {
+          console.warn('[stall watcher] still frozen after silent retry — showing reconnect overlay');
+          setShowErrorOverlay(true);
+          setErrorMessage(null);
+          if (onError) onError(true);
+          startBufferStalledRetry();
+        }
       }
       lastTimeRef.current = video.currentTime;
     }, 3000);
@@ -71,18 +78,13 @@ export default function VideoPlayer({ channel, userAgent, onVideoRef, onPlayStat
 
   const handleRetry = () => {
     clearAllTimers();
-    setBufferStalled(false);
+    setShowErrorOverlay(false);
     setCountdown(5);
     destroyPlayers();
 
     const video = videoRef.current;
     if (!video || !channel) return;
-
-    if (isMpegTS(channel.url)) {
-      loadMpegTS(channel.url, video);
-    } else {
-      loadHLS(channel.url, video);
-    }
+    loadStream(channel.url, video);
   };
 
   const startBufferStalledRetry = () => {
@@ -105,6 +107,7 @@ export default function VideoPlayer({ channel, userAgent, onVideoRef, onPlayStat
 
   const playWithErrorHandler = (playable) => {
     playable.play().catch(e => {
+      if (e.name === 'AbortError') return;
       console.error('Playback error:', e);
       onPlayStateChange?.(false);
     });
@@ -114,7 +117,7 @@ export default function VideoPlayer({ channel, userAgent, onVideoRef, onPlayStat
     const knownMsg = HTTP_ERROR_MESSAGES[httpStatus];
     if (knownMsg) {
       destroyPlayers();
-      setBufferStalled(true);
+      setShowErrorOverlay(true);
       setErrorMessage(knownMsg);
       if (onError) onError(true);
       return;
@@ -129,7 +132,7 @@ export default function VideoPlayer({ channel, userAgent, onVideoRef, onPlayStat
       console.log(`${logLabel} error, silently retrying...`);
       retryTimerRef.current = setTimeout(() => { handleRetry(); }, 2000);
     } else {
-      setBufferStalled(true);
+      setShowErrorOverlay(true);
       setErrorMessage(null);
       if (onError) onError(true);
       startBufferStalledRetry();
@@ -149,7 +152,7 @@ export default function VideoPlayer({ channel, userAgent, onVideoRef, onPlayStat
 
   const loadMpegTS = (url, video) => {
     if (!mpegts.isSupported()) {
-      setBufferStalled(true);
+      setShowErrorOverlay(true);
       if (onError) onError(true);
       return;
     }
@@ -180,11 +183,16 @@ export default function VideoPlayer({ channel, userAgent, onVideoRef, onPlayStat
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
       // Native HLS (Safari)
       video.src = url;
-      video.addEventListener('loadedmetadata', () => playWithErrorHandler(video));
+      video.addEventListener('loadedmetadata', () => playWithErrorHandler(video), { once: true });
     } else {
-      setBufferStalled(true);
+      setShowErrorOverlay(true);
       if (onError) onError(true);
     }
+  };
+
+  const loadStream = (url, video) => {
+    if (isMpegTS(url)) loadMpegTS(url, video);
+    else loadHLS(url, video);
   };
 
   useEffect(() => {
@@ -197,16 +205,12 @@ export default function VideoPlayer({ channel, userAgent, onVideoRef, onPlayStat
     if (!channel || !videoRef.current) return;
 
     clearAllTimers();
-    setBufferStalled(false);
+    setShowErrorOverlay(false);
     setErrorMessage(null);
     setCountdown(5);
     const video = videoRef.current;
 
-    if (isMpegTS(channel.url)) {
-      loadMpegTS(channel.url, video);
-    } else {
-      loadHLS(channel.url, video);
-    }
+    loadStream(channel.url, video);
 
     return () => {
       clearAllTimers();
@@ -220,9 +224,15 @@ export default function VideoPlayer({ channel, userAgent, onVideoRef, onPlayStat
     if (!video) return;
 
     const handlePlay = () => onPlayStateChange?.(true);
-    const handlePause = () => onPlayStateChange?.(false);
+    const handlePause = () => {
+      onPlayStateChange?.(false);
+      if (stallWatcherRef.current) {
+        clearInterval(stallWatcherRef.current);
+        stallWatcherRef.current = null;
+      }
+    };
     const handlePlaying = () => {
-      setBufferStalled(prev => {
+      setShowErrorOverlay(prev => {
         if (prev) {
           clearAllTimers();
           setCountdown(5);
@@ -242,7 +252,7 @@ export default function VideoPlayer({ channel, userAgent, onVideoRef, onPlayStat
       video.removeEventListener('pause', handlePause);
       video.removeEventListener('playing', handlePlaying);
     };
-  }, [onPlayStateChange]);
+  }, [onPlayStateChange, channel]);
 
   return (
     <div className="video-container">
@@ -253,7 +263,7 @@ export default function VideoPlayer({ channel, userAgent, onVideoRef, onPlayStat
         autoPlay
         muted
       />
-      {bufferStalled && (
+      {showErrorOverlay && (
         <div className="video-error">
           {errorMessage ? (
             <div className="video-error-card error-fatal">
