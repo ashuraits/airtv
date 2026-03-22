@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.6.2] - 2026-03-22
+
+### New Features
+- Player sidebar now automatically scrolls to the active channel when opened
+
+### Improvements
+- Improved stream stall detection — the player now correctly recovers from silent HLS failures
+- Fixed error overlay: it now clears when playback resumes
+
 ## [0.6.1] - 2026-03-21
 
 ### Improvements
