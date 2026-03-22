@@ -1,7 +1,16 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import ChannelListItem from './ChannelListItem';
 
 export default function PlayerSidebar({ channels, currentIndex, favorites, onChannelSelect, isOpen, onOpenChange }) {
+  const activeItemRef = useRef(null);
+
+  // Scroll active channel into view when sidebar opens
+  useEffect(() => {
+    if (isOpen && activeItemRef.current) {
+      activeItemRef.current.scrollIntoView({ block: 'center' });
+    }
+  }, [isOpen]);
+
   // Hide sidebar when mouse leaves window
   useEffect(() => {
     const handleMouseLeave = (e) => {
@@ -36,14 +45,16 @@ export default function PlayerSidebar({ channels, currentIndex, favorites, onCha
         <div className="player-sidebar-content">
           {channels.map((channel, index) => {
             const isFavorite = favorites?.some(f => f.url === channel.url) || false;
+            const isActive = index === currentIndex;
             return (
-              <ChannelListItem
-                key={`${channel.url}-${index}`}
-                channel={channel}
-                isActive={index === currentIndex}
-                isFavorite={isFavorite}
-                onClick={() => onChannelSelect(channel, index)}
-              />
+              <div key={`${channel.url}-${index}`} ref={isActive ? activeItemRef : null}>
+                <ChannelListItem
+                  channel={channel}
+                  isActive={isActive}
+                  isFavorite={isFavorite}
+                  onClick={() => onChannelSelect(channel, index)}
+                />
+              </div>
             );
           })}
         </div>
