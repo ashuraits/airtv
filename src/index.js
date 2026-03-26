@@ -1,4 +1,7 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, nativeTheme } = require('electron');
+
+// Force dark mode across all windows and system UI
+nativeTheme.themeSource = 'dark';
 const Store = require('electron-store').default;
 const windowManager = require('./main/windowManager');
 const ipcHandlers = require('./main/ipcHandlers');
