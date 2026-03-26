@@ -142,6 +142,14 @@ export default function VideoPlayer({ channel, userAgent, onVideoRef, onPlayStat
   const handleHLSError = (_event, data) => {
     if (!data.fatal) return;
     console.error('HLS error:', data);
+    if (data.details === 'bufferAddCodecError' &&
+        (data.mimeType?.includes('hvc1') || data.mimeType?.includes('hev1'))) {
+      destroyPlayers();
+      setShowErrorOverlay(true);
+      setErrorMessage('H.265/HEVC not supported on this platform');
+      if (onError) onError(true);
+      return;
+    }
     handleStreamError(data.response?.code, 'HLS');
   };
 
@@ -168,6 +176,15 @@ export default function VideoPlayer({ channel, userAgent, onVideoRef, onPlayStat
     mpegtsRef.current = player;
   };
 
+  const isHEVCSupported = () => {
+    try {
+      return typeof MediaSource !== 'undefined' &&
+        MediaSource.isTypeSupported('video/mp4;codecs=hvc1.1.6.L93.B0');
+    } catch {
+      return false;
+    }
+  };
+
   const loadHLS = (url, video) => {
     if (Hls.isSupported()) {
       if (hlsRef.current) {
@@ -177,7 +194,17 @@ export default function VideoPlayer({ channel, userAgent, onVideoRef, onPlayStat
       const hls = new Hls({ enableWorker: true, lowLatencyMode: true });
       hls.loadSource(url);
       hls.attachMedia(video);
-      hls.on(Hls.Events.MANIFEST_PARSED, () => playWithErrorHandler(video));
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        // On platforms without HEVC support, prefer H.264 levels
+        if (!isHEVCSupported()) {
+          const h264Index = hls.levels.findIndex(l => {
+            const codec = l.videoCodec || '';
+            return !codec.includes('hvc1') && !codec.includes('hev1');
+          });
+          if (h264Index !== -1) hls.currentLevel = h264Index;
+        }
+        playWithErrorHandler(video);
+      });
       hls.on(Hls.Events.ERROR, handleHLSError);
       hlsRef.current = hls;
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {

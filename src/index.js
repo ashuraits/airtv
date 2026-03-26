@@ -14,6 +14,12 @@ if (require('electron-squirrel-startup')) {
   app.quit();
 }
 
+// Enable platform HEVC decoder on Windows (requires HEVC Video Extensions from Microsoft Store)
+if (process.platform === 'win32') {
+  app.commandLine.appendSwitch('enable-features', 'PlatformHEVCDecoderSupport');
+  app.commandLine.appendSwitch('ignore-gpu-blocklist');
+}
+
 // Enable hot reload in development
 try {
   if (process.env.NODE_ENV === 'development') {
