@@ -1,4 +1,7 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, nativeTheme } = require('electron');
+
+// Force dark mode across all windows and system UI
+nativeTheme.themeSource = 'dark';
 const Store = require('electron-store').default;
 const windowManager = require('./main/windowManager');
 const ipcHandlers = require('./main/ipcHandlers');
@@ -12,6 +15,12 @@ const proxy = require('./main/proxy');
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
   app.quit();
+}
+
+// Enable platform HEVC decoder on Windows (requires HEVC Video Extensions from Microsoft Store)
+if (process.platform === 'win32') {
+  app.commandLine.appendSwitch('enable-features', 'PlatformHEVCDecoderSupport');
+  app.commandLine.appendSwitch('ignore-gpu-blocklist');
 }
 
 // Enable hot reload in development

@@ -115,8 +115,71 @@ jobs:
         path: release_notes.txt
         if-no-files-found: warn
 
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build application
+      run: npm run build
+
+    - name: Package application
+      run: npx electron-forge make --targets @electron-forge/maker-squirrel
+
+    - name: Generate Windows update metadata
+      if: startsWith(github.ref, 'refs/tags/')
+      shell: powershell
+      run: |
+        $version = node -p "require('./package.json').version"
+        $exeFile = Get-ChildItem -Recurse out/make -Filter "*Setup.exe" | Select-Object -First 1
+        $exeName = $exeFile.Name
+        $exeSize = $exeFile.Length
+        $sha512 = (Get-FileHash $exeFile.FullName -Algorithm SHA512).Hash.ToLower()
+        $releaseDate = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.000Z")
+        $yaml = @"
+        version: $version
+        files:
+          - url: $exeName
+            sha512: $sha512
+            size: $exeSize
+        path: $exeName
+        sha512: $sha512
+        releaseDate: '$releaseDate'
+        "@
+        $yaml | Out-File -FilePath "out/make/latest.yml" -Encoding utf8
+
+    - name: List output files
+      run: Get-ChildItem -Recurse out/
+      shell: powershell
+
+    - name: Upload Windows installer artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: AirTV-Windows
+        path: out/make/squirrel.windows/**/*.exe
+        if-no-files-found: error
+
+    - name: Upload Windows update metadata
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: actions/upload-artifact@v4
+      with:
+        name: AirTV-Windows-metadata
+        path: out/make/latest.yml
+        if-no-files-found: warn
+
   release:
-    needs: build-macos
+    needs: [build-macos, build-windows]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
 
@@ -124,22 +187,34 @@ jobs:
       contents: write
 
     steps:
-    - name: Download DMG artifacts
+    - name: Download macOS DMG
       uses: actions/download-artifact@v4
       with:
         name: AirTV-macOS
         path: artifacts/
 
-    - name: Download ZIP artifacts
+    - name: Download macOS ZIP
       uses: actions/download-artifact@v4
       with:
         name: AirTV-macOS-ZIP
         path: artifacts/
 
-    - name: Download metadata artifacts
+    - name: Download macOS metadata
       uses: actions/download-artifact@v4
       with:
         name: AirTV-macOS-metadata
+        path: artifacts/
+
+    - name: Download Windows installer
+      uses: actions/download-artifact@v4
+      with:
+        name: AirTV-Windows
+        path: artifacts/
+
+    - name: Download Windows metadata
+      uses: actions/download-artifact@v4
+      with:
+        name: AirTV-Windows-metadata
         path: artifacts/
 
     - name: Download release notes
@@ -155,6 +230,7 @@ jobs:
           artifacts/**/*.dmg
           artifacts/**/*.zip
           artifacts/**/*.yml
+          artifacts/**/*.exe
         body_path: release_notes.txt
         draft: false
         prerelease: false
